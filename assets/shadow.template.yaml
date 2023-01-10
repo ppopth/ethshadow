@@ -1,0 +1,31 @@
+general:
+  stop_time: 600
+  model_unblocked_syscall_latency: true
+
+network:
+  graph:
+    type: gml
+    inline: |
+      graph [
+        node [
+          id 0
+          host_bandwidth_up "1 Gbit"
+          host_bandwidth_down "1 Gbit"
+        ]
+        edge [
+          source 0
+          target 0
+          latency "10 ms"
+          packet_loss 0.0
+        ]
+      ]
+
+hosts:
+  bootnode:
+    network_node_id: 0
+    processes:
+      - path: bootnode
+  signingnode:
+    network_node_id: 0
+    processes:
+      - path: geth
