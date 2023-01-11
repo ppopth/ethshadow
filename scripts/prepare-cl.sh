@@ -64,3 +64,13 @@ yq -i ".hosts.signernode.processes += { \
     \"args\": \"$args\", \
     \"start_time\": 10 \
 }" $SHADOW_CONFIG_FILE
+log_shadow_config "the deposit contract deployment job of the \"signer\" node"
+
+# Select the validator
+mkdir -p $CONSENSUS_DIR/validator_keys
+NODE_PATH=./web3/node_modules node ./web3/src/distribute-validators.js \
+    --nc $NODE_COUNT \
+    --vc $VALIDATOR_COUNT \
+    -d $BUILD_DIR/validator_keys \
+    -o $CONSENSUS_DIR/validator_keys \
+    > $ROOT/deposit-data.json

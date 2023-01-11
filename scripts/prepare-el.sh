@@ -61,6 +61,7 @@ echo "Initialized the data directory $SIGNER_EL_DATADIR with $GENESIS_FILE"
 yq -i ".hosts.bootnode.ip_addr = \"$EL_BOOTNODE_IP\"" $SHADOW_CONFIG_FILE
 # Set the arguments for the bootnode's geth command
 yq -i ".hosts.bootnode.processes[].args = \"-nodekey $(realpath ./assets/execution/boot.key) -verbosity 5 -addr :$EL_BOOTNODE_PORT\"" $SHADOW_CONFIG_FILE
+log_shadow_config "the geth bootnode"
 
 boot_enode="$(cat ./assets/execution/boot.enode)@$EL_BOOTNODE_IP:0?discport=$EL_BOOTNODE_PORT"
 
@@ -82,6 +83,7 @@ args="\
 "
 yq -i ".hosts.signernode.processes[].args = \"$args\"" $SHADOW_CONFIG_FILE
 yq -i ".hosts.signernode.ip_addr = \"$SIGNER_IP\"" $SHADOW_CONFIG_FILE
+log_shadow_config "the geth process of the \"signer\" node"
 
 # Set the arguments for each node's geth command
 for (( node=1; node<=$NODE_COUNT; node++ )); do
@@ -100,4 +102,5 @@ for (( node=1; node<=$NODE_COUNT; node++ )); do
 --password $(realpath $ROOT/password) \
 "
     yq -i ".hosts.node$node.processes += { \"path\": \"geth\", \"args\": \"$args\" }" $SHADOW_CONFIG_FILE
+    log_shadow_config "the geth process of the node #$node"
 done
