@@ -23,9 +23,7 @@ network:
 hosts:
   bootnode:
     network_node_id: 0
-    processes:
-      - path: bootnode
+    processes: []
   signernode:
     network_node_id: 0
-    processes:
-      - path: geth
+    processes: []

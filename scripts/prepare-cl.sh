@@ -60,7 +60,7 @@ yq -i ".hosts.signernode.processes += { \
     \"path\": \"node\", \
     \"environment\": \"$env\", \
     \"args\": \"$args\", \
-    \"start_time\": 5 \
+    \"start_time\": $DEPLOY_DEPOSIT_CONTRACT_STARTTIME \
 }" $SHADOW_CONFIG_FILE
 log_shadow_config "the deposit contract deployment job of the \"signer\" node"
 
@@ -84,6 +84,68 @@ yq -i ".hosts.signernode.processes += { \
     \"path\": \"node\", \
     \"environment\": \"$env\", \
     \"args\": \"$args\", \
-    \"start_time\": 10 \
+    \"start_time\": $TRANSFER_DEPOSIT_STARTTIME \
 }" $SHADOW_CONFIG_FILE
 log_shadow_config "the deposit transfer job of the \"signer\" node"
+
+cp $CONFIG_TEMPLATE_FILE $CONFIG_FILE
+echo "PRESET_BASE: \"$PRESET_BASE\"" >> $CONFIG_FILE
+echo "TERMINAL_TOTAL_DIFFICULTY: \"$TERMINAL_TOTAL_DIFFICULTY\"" >> $CONFIG_FILE
+echo "MIN_GENESIS_ACTIVE_VALIDATOR_COUNT: \"$VALIDATOR_COUNT\"" >> $CONFIG_FILE
+# 946684800 is January 1, 2000 12:00:00 AM which is the hard-coded start time of Shadow
+echo "MIN_GENESIS_TIME: \"$(expr 946684800 + $GENESIS_DELAY)\"" >> $CONFIG_FILE
+echo "GENESIS_DELAY: \"$GENESIS_DELAY\"" >> $CONFIG_FILE
+echo "GENESIS_FORK_VERSION: \"$GENESIS_FORK_VERSION\"" >> $CONFIG_FILE
+
+echo "DEPOSIT_CHAIN_ID: \"$NETWORK_ID\"" >> $CONFIG_FILE
+echo "DEPOSIT_NETWORK_ID: \"$NETWORK_ID\"" >> $CONFIG_FILE
+
+echo "SECONDS_PER_SLOT: \"$SECONDS_PER_SLOT\"" >> $CONFIG_FILE
+echo "SECONDS_PER_ETH1_BLOCK: \"$SECONDS_PER_ETH1_BLOCK\"" >> $CONFIG_FILE
+
+echo "Generated $CONFIG_FILE"
+
+# Fill the contract address in the config file
+env="NODE_PATH=$(realpath ./web3/node_modules)"
+args="$(realpath ./web3/src/fill-lighthouse-config.js) \
+--address-file $(realpath $ROOT/deposit-address) \
+--config-file $(realpath $CONFIG_FILE)"
+yq -i ".hosts.signernode.processes += { \
+    \"path\": \"node\", \
+    \"environment\": \"$env\", \
+    \"args\": \"$args\", \
+    \"start_time\": $FILL_LIGHTHOUSE_CONFIG_STARTTIME \
+}" $SHADOW_CONFIG_FILE
+log_shadow_config "the lighthouse config file filling job of the \"signer\" node"
+
+lcli \
+    generate-bootnode-enr \
+    --ip $BOOTNODE_IP \
+    --udp-port $CL_BOOTNODE_PORT \
+    --tcp-port $CL_BOOTNODE_PORT \
+    --genesis-fork-version $GENESIS_FORK_VERSION \
+    --output-dir $CL_BOOTNODE_DIR
+
+bootnode_enr=$(cat $CL_BOOTNODE_DIR/enr.dat)
+echo "- $bootnode_enr" > $CONSENSUS_DIR/boot_enr.yaml
+echo "Generated $CONSENSUS_DIR/boot_enr.yaml"
+
+# Run "lighthouse account validator import" for each node
+for (( node=1; node<=$NODE_COUNT; node++ )); do
+    cl_data_dir $node
+    mkdir -p $cl_data_dir
+    args="\
+--testnet-dir $(realpath $CONSENSUS_DIR) \
+account validator import \
+--directory $(realpath $CONSENSUS_DIR/validator_keys/node$node) \
+--datadir $(realpath $cl_data_dir) \
+--password-file $(realpath $ROOT/password) \
+--reuse-password
+"
+    yq -i ".hosts.node$node.processes += { \
+        \"path\": \"lighthouse\", \
+        \"args\": \"$args\", \
+        \"start_time\": $LIGHTHOUSE_VALIDATOR_IMPORT_STARTTIME \
+    }" $SHADOW_CONFIG_FILE
+    log_shadow_config "the lighthouse account validator import of the node #$node"
+done

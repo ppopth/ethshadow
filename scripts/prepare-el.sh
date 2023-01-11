@@ -58,14 +58,15 @@ geth init --datadir $SIGNER_EL_DATADIR $GENESIS_FILE 2>/dev/null
 echo "Initialized the data directory $SIGNER_EL_DATADIR with $GENESIS_FILE"
 
 # Set the IP address for the bootnode
-yq -i ".hosts.bootnode.ip_addr = \"$EL_BOOTNODE_IP\"" $SHADOW_CONFIG_FILE
-# Set the arguments for the bootnode's geth command
-yq -i ".hosts.bootnode.processes[].args = \"-nodekey $(realpath ./assets/execution/boot.key) -verbosity 5 -addr :$EL_BOOTNODE_PORT\"" $SHADOW_CONFIG_FILE
+yq -i ".hosts.bootnode.ip_addr = \"$BOOTNODE_IP\"" $SHADOW_CONFIG_FILE
+# The "bootnode" process for the bootnode
+args="-nodekey $(realpath ./assets/execution/boot.key) -verbosity 5 -addr :$EL_BOOTNODE_PORT"
+yq -i ".hosts.bootnode.processes += { \"path\": \"bootnode\", \"args\": \"$args\" }" $SHADOW_CONFIG_FILE
 log_shadow_config "the geth bootnode"
 
-boot_enode="$(cat ./assets/execution/boot.enode)@$EL_BOOTNODE_IP:0?discport=$EL_BOOTNODE_PORT"
+boot_enode="$(cat ./assets/execution/boot.enode)@$BOOTNODE_IP:0?discport=$EL_BOOTNODE_PORT"
 
-# Set the arguments for the signing node's geth command
+# The geth process in the signer node
 address=$(cat $SIGNER_EL_DATADIR/address)
 args="\
 --datadir $(realpath $SIGNER_EL_DATADIR) \
@@ -79,13 +80,13 @@ args="\
 --ipcdisable \
 --unlock $address \
 --password $(realpath $ROOT/password) \
---mine \
+--mine
 "
-yq -i ".hosts.signernode.processes[].args = \"$args\"" $SHADOW_CONFIG_FILE
+yq -i ".hosts.signernode.processes += { \"path\": \"geth\", \"args\": \"$args\" }" $SHADOW_CONFIG_FILE
 yq -i ".hosts.signernode.ip_addr = \"$SIGNER_IP\"" $SHADOW_CONFIG_FILE
 log_shadow_config "the geth process of the \"signer\" node"
 
-# Set the arguments for each node's geth command
+# The geth process for each node
 for (( node=1; node<=$NODE_COUNT; node++ )); do
     el_data_dir $node
     address=$(cat $el_data_dir/address)
@@ -99,7 +100,7 @@ for (( node=1; node<=$NODE_COUNT; node++ )); do
 --nat extip:$ip \
 --ipcdisable \
 --unlock $address \
---password $(realpath $ROOT/password) \
+--password $(realpath $ROOT/password)
 "
     yq -i ".hosts.node$node.processes += { \"path\": \"geth\", \"args\": \"$args\" }" $SHADOW_CONFIG_FILE
     log_shadow_config "the geth process of the node #$node"

@@ -21,6 +21,8 @@ fi
 
 check_cmd shadow "See https://shadow.github.io/docs/guide/install_shadow.html for installation, but use the \"ethereum\" branch from https://github.com/ppopth/shadow instead."
 check_cmd geth "See https://geth.ethereum.org/docs/getting-started/installing-geth for more detail."
+check_cmd lighthouse "See https://lighthouse-book.sigmaprime.io/installation.html for more detail."
+check_cmd lcli "See https://lighthouse-book.sigmaprime.io/installation-source.html and run \"make install-lcli\"."
 check_cmd yq "See https://github.com/mikefarah/yq for more detail."
 check_cmd npm "See https://nodejs.org/en/download/ for more detail."
 check_cmd node "See https://nodejs.org/en/download/ for more detail."

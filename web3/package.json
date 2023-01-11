@@ -3,6 +3,7 @@
   "bin": {
     "deploy-deposit-contract": "./src/deploy-deposit-contract.js",
     "distribute-validators": "./src/distribute-validators.js",
+    "fill-lighthouse-config": "./src/fill-lighthouse-config.js",
     "transfer-deposit": "./src/transfer-deposit.js"
   },
   "dependencies": {
