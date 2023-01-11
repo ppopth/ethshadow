@@ -55,14 +55,12 @@ args="$(realpath ./web3/src/deploy-deposit-contract.js) \
 --endpoint http://localhost:$SIGNER_HTTP_PORT \
 --file $(realpath ./assets/deposit-contract.json) \
 --address-out $(realpath $ROOT/deposit-address) \
---block-out $(realpath $CONSENSUS_DIR/deploy_block.txt) \
-"
-
+--block-out $(realpath $CONSENSUS_DIR/deploy_block.txt)"
 yq -i ".hosts.signernode.processes += { \
     \"path\": \"node\", \
     \"environment\": \"$env\", \
     \"args\": \"$args\", \
-    \"start_time\": 10 \
+    \"start_time\": 5 \
 }" $SHADOW_CONFIG_FILE
 log_shadow_config "the deposit contract deployment job of the \"signer\" node"
 
@@ -74,3 +72,18 @@ NODE_PATH=./web3/node_modules node ./web3/src/distribute-validators.js \
     -d $BUILD_DIR/validator_keys \
     -o $CONSENSUS_DIR/validator_keys \
     > $ROOT/deposit-data.json
+
+# Send the deposits to the deposit contract
+env="NODE_PATH=$(realpath ./web3/node_modules)"
+args="$(realpath ./web3/src/transfer-deposit.js) \
+--endpoint http://localhost:$SIGNER_HTTP_PORT \
+--address-file $(realpath $ROOT/deposit-address) \
+--contract-file $(realpath ./assets/deposit-contract.json) \
+--deposit-file $(realpath $ROOT/deposit-data.json)"
+yq -i ".hosts.signernode.processes += { \
+    \"path\": \"node\", \
+    \"environment\": \"$env\", \
+    \"args\": \"$args\", \
+    \"start_time\": 10 \
+}" $SHADOW_CONFIG_FILE
+log_shadow_config "the deposit transfer job of the \"signer\" node"

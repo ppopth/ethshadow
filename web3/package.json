@@ -2,7 +2,8 @@
   "name": "testnet-web3",
   "bin": {
     "deploy-deposit-contract": "./src/deploy-deposit-contract.js",
-    "distribute-validators": "./src/distribute-validators.js"
+    "distribute-validators": "./src/distribute-validators.js",
+    "transfer-deposit": "./src/transfer-deposit.js"
   },
   "dependencies": {
     "fs": "^0.0.1-security",
