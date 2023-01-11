@@ -69,6 +69,9 @@ address=$(cat $SIGNER_EL_DATADIR/address)
 args="\
 --datadir $(realpath $SIGNER_EL_DATADIR) \
 --port $SIGNER_PORT \
+--http \
+--http.port $SIGNER_HTTP_PORT \
+--allow-insecure-unlock \
 --bootnodes $boot_enode \
 --networkid $NETWORK_ID \
 --nat extip:$SIGNER_IP \
@@ -77,8 +80,8 @@ args="\
 --password $(realpath $ROOT/password) \
 --mine \
 "
-yq -i ".hosts.signingnode.processes[].args = \"$args\"" $SHADOW_CONFIG_FILE
-yq -i ".hosts.signingnode.ip_addr = \"$SIGNER_IP\"" $SHADOW_CONFIG_FILE
+yq -i ".hosts.signernode.processes[].args = \"$args\"" $SHADOW_CONFIG_FILE
+yq -i ".hosts.signernode.ip_addr = \"$SIGNER_IP\"" $SHADOW_CONFIG_FILE
 
 # Set the arguments for each node's geth command
 for (( node=1; node<=$NODE_COUNT; node++ )); do

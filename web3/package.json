@@ -1,0 +1,12 @@
+{
+  "name": "testnet-web3",
+  "bin": {
+    "deploy-deposit-contract": "./src/deploy-deposit-contract.js"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "net": "^1.0.2",
+    "web3": "^1.8.1",
+    "yargs": "^17.6.2"
+  }
+}

@@ -22,6 +22,8 @@ fi
 check_cmd shadow "See https://shadow.github.io/docs/guide/install_shadow.html for installation, but use the \"ethereum\" branch from https://github.com/ppopth/shadow instead."
 check_cmd geth "See https://geth.ethereum.org/docs/getting-started/installing-geth for more detail."
 check_cmd yq "See https://github.com/mikefarah/yq for more detail."
+check_cmd npm "See https://nodejs.org/en/download/ for more detail."
+check_cmd node "See https://nodejs.org/en/download/ for more detail."
 
 mkdir -p $ROOT
 
@@ -41,6 +43,10 @@ done
 
 if ! ./scripts/prepare-el.sh; then
     echo -e "\n*Failed!* in the execution layer preparation step\n"
+    exit 1
+fi
+if ! ./scripts/prepare-cl.sh; then
+    echo -e "\n*Failed!* in the consensus layer preparation step\n"
     exit 1
 fi
 

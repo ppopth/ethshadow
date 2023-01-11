@@ -25,7 +25,7 @@ hosts:
     network_node_id: 0
     processes:
       - path: bootnode
-  signingnode:
+  signernode:
     network_node_id: 0
     processes:
       - path: geth
