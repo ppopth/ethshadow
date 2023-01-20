@@ -161,3 +161,20 @@ account validator import \
     }" $SHADOW_CONFIG_FILE
     log_shadow_config "the lighthouse account validator import of the node #$node"
 done
+
+# The "lighthouse boot_node" process for the bootnode
+# --disable-packet-filter is necessary because it's involed in rate limiting and nodes per IP limit
+# See https://github.com/sigp/discv5/blob/v0.1.0/src/socket/filter/mod.rs#L149-L186
+args="\
+--testnet-dir $(realpath $CONSENSUS_DIR) \
+boot_node \
+--port $CL_BOOTNODE_PORT \
+--disable-packet-filter \
+--network-dir $(realpath $CL_BOOTNODE_DIR)
+"
+yq -i ".hosts.bootnode.processes += { \
+    \"path\": \"lighthouse\", \
+    \"args\": \"$args\", \
+    \"start_time\": $LIGHTHOUSE_BOOT_NODE_STARTTIME \
+}" $SHADOW_CONFIG_FILE
+log_shadow_config "the lighthouse bootnode"
