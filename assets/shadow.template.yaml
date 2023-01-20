@@ -1,5 +1,4 @@
 general:
-  stop_time: 600
   model_unblocked_syscall_latency: true
 
 network:

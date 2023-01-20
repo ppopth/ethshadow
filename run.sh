@@ -34,6 +34,8 @@ echo "itsjustnothing" > $ROOT/password
 
 cp $SHADOW_CONFIG_TEMPLATE_FILE $SHADOW_CONFIG_FILE
 
+yq -i ".general.stop_time = $STOP_TIME" $SHADOW_CONFIG_FILE
+
 for (( node=1; node<=$NODE_COUNT; node++ )); do
     node_ip $node
     yq -i ".hosts.node$node = { \

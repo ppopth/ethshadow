@@ -178,3 +178,54 @@ yq -i ".hosts.bootnode.processes += { \
     \"start_time\": $LIGHTHOUSE_BOOT_NODE_STARTTIME \
 }" $SHADOW_CONFIG_FILE
 log_shadow_config "the lighthouse bootnode"
+
+# The lighthouse beacon node process for each node
+for (( node=1; node<=$NODE_COUNT; node++ )); do
+    cl_data_dir $node
+    el_data_dir $node
+    node_ip $node
+    # --disable-packet-filter is necessary because it's involed in rate limiting and nodes per IP limit
+    # See https://github.com/sigp/discv5/blob/v0.1.0/src/socket/filter/mod.rs#L149-L186
+    args="\
+--testnet-dir $(realpath $CONSENSUS_DIR) \
+beacon_node \
+--datadir $(realpath $cl_data_dir) \
+--execution-endpoint http://localhost:$EL_NODE_RPC_PORT \
+--execution-jwt $(realpath $el_data_dir/geth/jwtsecret) \
+--enable-private-discovery \
+--staking \
+--enr-address $ip \
+--enr-udp-port $CL_BEACON_NODE_PORT \
+--enr-tcp-port $CL_BEACON_NODE_PORT \
+--port $CL_BEACON_NODE_PORT \
+--http \
+--http-port $CL_BEACON_NODE_HTTP_PORT \
+--disable-packet-filter
+"
+    yq -i ".hosts.node$node.processes += { \
+        \"path\": \"lighthouse\", \
+        \"args\": \"$args\", \
+        \"start_time\": $LIGHTHOUSE_BEACON_NODE_STARTTIME \
+    }" $SHADOW_CONFIG_FILE
+    log_shadow_config "the lighthouse beacon node process of the node #$node"
+done
+
+# The lighthouse validator client process for each node
+for (( node=1; node<=$NODE_COUNT; node++ )); do
+    cl_data_dir $node
+    el_data_dir $node
+    args="\
+--testnet-dir $(realpath $CONSENSUS_DIR) \
+validator_client \
+--datadir $(realpath $cl_data_dir) \
+--init-slashing-protection \
+--beacon-nodes http://localhost:$CL_BEACON_NODE_HTTP_PORT \
+--suggested-fee-recipient $(cat $el_data_dir/address)
+"
+    yq -i ".hosts.node$node.processes += { \
+        \"path\": \"lighthouse\", \
+        \"args\": \"$args\", \
+        \"start_time\": $LIGHTHOUSE_VALIDATOR_CLIENT_STARTTIME \
+    }" $SHADOW_CONFIG_FILE
+    log_shadow_config "the lighthouse validator client process of the node #$node"
+done

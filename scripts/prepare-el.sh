@@ -94,6 +94,7 @@ for (( node=1; node<=$NODE_COUNT; node++ )); do
 
     args="\
 --datadir $(realpath $el_data_dir) \
+--authrpc.port $EL_NODE_RPC_PORT \
 --port $EL_NODE_PORT \
 --bootnodes $boot_enode \
 --networkid $NETWORK_ID \
