@@ -118,6 +118,18 @@ yq -i ".hosts.signernode.processes += { \
 }" $SHADOW_CONFIG_FILE
 log_shadow_config "the lighthouse config file filling job of the \"signer\" node"
 
+args="eth1-genesis \
+--spec $PRESET_BASE \
+--eth1-endpoints http://localhost:$SIGNER_HTTP_PORT \
+--testnet-dir $(realpath $CONSENSUS_DIR)
+"
+yq -i ".hosts.signernode.processes += { \
+    \"path\": \"lcli\", \
+    \"args\": \"$args\", \
+    \"start_time\": $BEACON_GENESIS_STARTTIME \
+}" $SHADOW_CONFIG_FILE
+log_shadow_config "the beacon genesis generation job of the \"signer\" node"
+
 lcli \
     generate-bootnode-enr \
     --ip $BOOTNODE_IP \
