@@ -54,4 +54,4 @@ if ! ./scripts/prepare-cl.sh; then
     exit 1
 fi
 
-shadow -d $SHADOW_DIR $SHADOW_CONFIG_FILE --use-memory-manager false --progress true > $ROOT/shadow.log
+shadow -p $PARALLELISM -d $SHADOW_DIR $SHADOW_CONFIG_FILE --use-memory-manager false --progress true > $ROOT/shadow.log
