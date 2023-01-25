@@ -55,7 +55,7 @@ cd ethereum-shadow
 ```
 By default, the number of nodes will be 4 and the number of validators will be 80. You can change them by setting the environment variables.
 ```bash
-NODE_COUNT=2 VALIDATOR_COUNT=10 ./run.sh
+NODE_COUNT=8 VALIDATOR_COUNT=40 ./run.sh
 ```
 *Note: new versions of geth and lighthouse can cause the simulation to run unsuccessfully because they will probably contain some syscalls that
 don't support in Shadow yet. As of this writing, it works with geth 1.10.26, lighthouse 3.4.0, and rust 1.65.0*
@@ -90,6 +90,8 @@ myname soft nofile 10485760
 myname hard nofile 10485760
 myname soft nproc unlimited
 myname hard nproc unlimited
+myname soft stack unlimited
+myname hard stack unlimited
 ```
 If you use the GUI login in your machine, you also need to add the following line in both `/etc/systemd/user.conf` and `/etc/systemd/system.conf`.
 ```
