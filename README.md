@@ -130,3 +130,4 @@ PARALLELISM=$(nproc) ./run.sh
 
 * Jan 22, 2023: I tried running a simulation with 20 nodes and 400 validators on a Digital Ocean instance with 8 vCPUs, 16GB of memory. It took me 45 minutes to run the simulation of 30 minutes of the network.
 * Jan 22, 2023: I tried running a simulation with 100 nodes and 2,000 validators on a Digital Ocean instance with 8 vCPUs, 16GB of memory, and 16GB of swap space in SSD. It took me 3 hours to run the simulation of 30 minutes of the network.
+* Jan 25, 2023: I tried running a simulation with 200 nodes and 4,000 validators on a Digital Ocean instance with 8 vCPUs, 16GB of memory, and 64GB of swap space in SSD. It took me 17 hours to run the simulation of 30 minutes of the network.
