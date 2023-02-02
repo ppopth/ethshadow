@@ -54,4 +54,6 @@ if ! ./scripts/prepare-cl.sh; then
     exit 1
 fi
 
-shadow -p $PARALLELISM -d $SHADOW_DIR $SHADOW_CONFIG_FILE --use-memory-manager false --progress true > $ROOT/shadow.log
+if test -z "$GENONLY"; then
+    shadow -p $PARALLELISM -d $SHADOW_DIR $SHADOW_CONFIG_FILE --use-memory-manager false --progress true > $ROOT/shadow.log
+fi
