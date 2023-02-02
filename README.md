@@ -60,6 +60,11 @@ NODE_COUNT=8 VALIDATOR_COUNT=40 ./run.sh
 *Note: new versions of geth and lighthouse can cause the simulation to run unsuccessfully because they will probably contain some syscalls that
 don't support in Shadow yet. As of this writing, it works with geth 1.10.26, lighthouse 3.4.0, and rust 1.65.0*
 
+If you want to specify the paths for your own geth and lighthouse binaries, you can do so by setting GETH_CMD and LIGHTHOUSE_CMD environment variables.
+```bash
+GETH_CMD=~/repos/go-ethereum/build/bin/geth LIGHTHOUSE_CMD=~/repos/lighthouse/target/release/lighthouse ./run.sh
+```
+
 ## Simulation Result
 
 After running the simulation, the following files and directories are probably the ones you want to look at.

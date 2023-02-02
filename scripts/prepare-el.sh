@@ -10,7 +10,7 @@ new_account() {
     local datadir=$2
 
     # Generate a new account for each geth node
-    address=$(geth --datadir $datadir account new --password $ROOT/password 2>/dev/null | grep -o "0x[0-9a-fA-F]*")
+    address=$($GETH_CMD --datadir $datadir account new --password $ROOT/password 2>/dev/null | grep -o "0x[0-9a-fA-F]*")
     echo "Generated an account with address $address for geth node $node and saved it at $datadir"
     echo $address > $datadir/address
 
@@ -50,11 +50,11 @@ for (( node=1; node<=$NODE_COUNT; node++ )); do
     el_data_dir $node
     datadir=$el_data_dir
 
-    geth init --datadir $datadir $GENESIS_FILE 2>/dev/null
+    $GETH_CMD init --datadir $datadir $GENESIS_FILE 2>/dev/null
     echo "Initialized the data directory $datadir with $GENESIS_FILE"
 done
 
-geth init --datadir $SIGNER_EL_DATADIR $GENESIS_FILE 2>/dev/null
+$GETH_CMD init --datadir $SIGNER_EL_DATADIR $GENESIS_FILE 2>/dev/null
 echo "Initialized the data directory $SIGNER_EL_DATADIR with $GENESIS_FILE"
 
 # Set the IP address for the bootnode
@@ -82,7 +82,7 @@ args="\
 --password $(realpath $ROOT/password) \
 --mine
 "
-yq -i ".hosts.signernode.processes += { \"path\": \"geth\", \"args\": \"$args\" }" $SHADOW_CONFIG_FILE
+yq -i ".hosts.signernode.processes += { \"path\": \"$GETH_CMD\", \"args\": \"$args\" }" $SHADOW_CONFIG_FILE
 yq -i ".hosts.signernode.ip_addr = \"$SIGNER_IP\"" $SHADOW_CONFIG_FILE
 log_shadow_config "the geth process of the \"signer\" node"
 
@@ -103,6 +103,6 @@ for (( node=1; node<=$NODE_COUNT; node++ )); do
 --unlock $address \
 --password $(realpath $ROOT/password)
 "
-    yq -i ".hosts.node$node.processes += { \"path\": \"geth\", \"args\": \"$args\" }" $SHADOW_CONFIG_FILE
+    yq -i ".hosts.node$node.processes += { \"path\": \"$GETH_CMD\", \"args\": \"$args\" }" $SHADOW_CONFIG_FILE
     log_shadow_config "the geth process of the node #$node"
 done

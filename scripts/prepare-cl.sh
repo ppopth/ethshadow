@@ -158,7 +158,7 @@ account validator import \
 --reuse-password
 "
     yq -i ".hosts.node$node.processes += { \
-        \"path\": \"lighthouse\", \
+        \"path\": \"$LIGHTHOUSE_CMD\", \
         \"args\": \"$args\", \
         \"start_time\": $LIGHTHOUSE_VALIDATOR_IMPORT_STARTTIME \
     }" $SHADOW_CONFIG_FILE
@@ -176,7 +176,7 @@ boot_node \
 --network-dir $(realpath $CL_BOOTNODE_DIR)
 "
 yq -i ".hosts.bootnode.processes += { \
-    \"path\": \"lighthouse\", \
+    \"path\": \"$LIGHTHOUSE_CMD\", \
     \"args\": \"$args\", \
     \"start_time\": $LIGHTHOUSE_BOOT_NODE_STARTTIME \
 }" $SHADOW_CONFIG_FILE
@@ -206,7 +206,7 @@ beacon_node \
 --disable-packet-filter
 "
     yq -i ".hosts.node$node.processes += { \
-        \"path\": \"lighthouse\", \
+        \"path\": \"$LIGHTHOUSE_CMD\", \
         \"args\": \"$args\", \
         \"start_time\": $LIGHTHOUSE_BEACON_NODE_STARTTIME \
     }" $SHADOW_CONFIG_FILE
@@ -226,7 +226,7 @@ validator_client \
 --suggested-fee-recipient $(cat $el_data_dir/address)
 "
     yq -i ".hosts.node$node.processes += { \
-        \"path\": \"lighthouse\", \
+        \"path\": \"$LIGHTHOUSE_CMD\", \
         \"args\": \"$args\", \
         \"start_time\": $LIGHTHOUSE_VALIDATOR_CLIENT_STARTTIME \
     }" $SHADOW_CONFIG_FILE
