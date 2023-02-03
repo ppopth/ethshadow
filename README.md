@@ -84,6 +84,12 @@ the git repository.
 Note that the timestamps shown in `./data/shadow/hosts` are not from the clock of the physical machine, but they are from the clock in the simulation itself
 which are similar to the ones you will get from the real Ethereum network. This is the main advantage we give over the one in [Local Ethereum Testnet](https://github.com/ppopth/local-testnet)
 
+## Network Topology
+
+Currently we set each node to have 20Mbps for downloading and another 20Mbps for uploading. Each pair of nodes has the latency of 100ms (which is the average latency of the nodes in discv5 network, see https://notes.ethereum.org/@pop/discv5-network-measurement). You can see and change the default setting at [./assets/shadow.template.yaml](https://github.com/ppopth/ethereum-shadow/blob/main/assets/shadow.template.yaml).
+
+In the future, we have a plan to assign each node the physical location so that the latencies among nodes will be more realistic.
+
 ## Scale to hundreds of nodes
 
 ### Kernel Configuration
