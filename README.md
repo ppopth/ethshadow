@@ -5,6 +5,14 @@ the Ethereum network is similar to and adopted from [Local Ethereum Testnet](htt
 That is, we use [lighthouse](https://github.com/sigp/lighthouse) and [geth](https://github.com/ethereum/go-ethereum) as
 the consensus client and execution client respectively. Please read the mentioned link for more detail.
 
+The advantages of using ethereum-shadow is that
+1. It already includes everything in the simulation (e.g. libp2p, discv5, etc).
+2. It uses the same software as the mainnet and the public testnets.
+3. If there is any upgades in lighthouse, we can integrate those upgrades easily in the simulation.
+
+If you want to simulate a new Ethereum protocol, what you need to do is just to implement it in lighthouse or geth and
+run it using this simulator.
+
 ## Install Dependencies
 
 You can follow the follwing instructions to install the dependencies. Please note that we use our own version of Shadow.
