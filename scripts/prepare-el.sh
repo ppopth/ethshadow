@@ -5,27 +5,39 @@ set -eu
 
 mkdir -p $EXECUTION_DIR
 
-new_account() {
-    local node=$1
-    local datadir=$2
-
-    # Generate a new account for each geth node
-    address=$($GETH_CMD --datadir $datadir account new --password $ROOT/password 2>/dev/null | grep -o "0x[0-9a-fA-F]*")
-    echo "Generated an account with address $address for geth node $node and saved it at $datadir"
-    echo $address > $datadir/address
-
-    # Add the account into the genesis state
-    alloc=$(echo $genesis | jq ".alloc + { \"${address:2}\": { \"balance\": \"$INITIAL_BALANCE\" } }")
-    genesis=$(echo $genesis | jq ". + { \"alloc\": $alloc }")
-}
-
 genesis=$(cat $GENESIS_TEMPLATE_FILE)
+next=1
 for (( node=1; node<=$NODE_COUNT; node++ )); do
     el_data_dir $node
-    new_account "#$node" $el_data_dir
+    datadir=$el_data_dir
+    mkdir -p $datadir
+
+    # Generate a new account for each geth node
+    $GETH_CMD --datadir $datadir account new --password $ROOT/password 2>/dev/null > $datadir/account_new.log &
+    if test $(expr $node % $PARALLELISM) -eq 0 || test $node -eq $NODE_COUNT; then
+        wait
+
+        for (( ; next<=$node; next++ )); do
+            el_data_dir $next
+            datadir=$el_data_dir
+            address=$(cat $datadir/account_new.log | grep -o "0x[0-9a-fA-F]*")
+            echo "Generated an account with address $address for geth node $next and saved it at $datadir"
+            echo $address > $datadir/address
+
+            # Add the account into the genesis state
+            alloc=$(echo $genesis | jq ".alloc + { \"${address:2}\": { \"balance\": \"$INITIAL_BALANCE\" } }")
+            genesis=$(echo $genesis | jq ". + { \"alloc\": $alloc }")
+        done
+    fi
 done
 
-new_account "'signer'" $SIGNER_EL_DATADIR
+# Generate a new account for the signer geth node
+address=$($GETH_CMD --datadir $SIGNER_EL_DATADIR account new --password $ROOT/password 2>/dev/null | grep -o "0x[0-9a-fA-F]*")
+echo "Generated an account with address $address for geth node 'signer' and saved it at $SIGNER_EL_DATADIR"
+echo $address > $SIGNER_EL_DATADIR/address
+# Add the account into the genesis state
+alloc=$(echo $genesis | jq ".alloc + { \"${address:2}\": { \"balance\": \"$INITIAL_BALANCE\" } }")
+genesis=$(echo $genesis | jq ". + { \"alloc\": $alloc }")
 
 # Add the extradata
 zeroes() {
