@@ -17,10 +17,11 @@ run it using this simulator.
 
 You can follow the follwing instructions to install the dependencies. Please note that we use our own version of Shadow.
 ```bash
-# Install geth and bootnode
-sudo add-apt-repository -y ppa:ethereum/ethereum
-sudo apt-get update
-sudo apt-get install -y ethereum
+# Install Go
+curl -OL https://go.dev/dl/go1.20.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.20.linux-amd64.tar.gz
+# If /usr/local/go/bin is not already in your PATH, run the following command
+echo 'export PATH="${PATH}:/usr/local/go/bin"' >> ~/.bashrc && source ~/.bashrc
 
 # Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -33,6 +34,14 @@ cd lighthouse
 git checkout stable
 make
 make install-lcli
+cd ..
+
+# Install geth and bootnode
+git clone https://github.com/ethereum/go-ethereum.git
+cd go-ethereum
+git checkout v1.10.26
+make all
+cp ./build/bin/geth ./build/bin/bootnode /usr/bin
 cd ..
 
 # Install Node.js
