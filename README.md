@@ -154,8 +154,20 @@ It's best to put the parallelism to be the same as the number of cores you have.
 PARALLELISM=$(nproc) ./run.sh
 ```
 
+### Issue with Spinlocks
+
+Since lighthouse uses the crated called [spin](https://github.com/mvdnes/spin-rs), you will probably encounter that some nodes consume a lot of CPU without making any simulation progress. The solution to this problem is to override the spin crate with our own crate. Run the following commands to do so.
+```bash
+git clone https://github.com/ppopth/spin-rs.git
+cd lighthouse
+echo -e '\n[patch.crates-io.spin]\npath = "../spin-rs"' | tee -a Cargo.toml
+make
+```
+
 ### Simulations
 
 * Jan 22, 2023: I tried running a simulation with 20 nodes and 400 validators on a Digital Ocean instance with 8 vCPUs, 16GB of memory. It took me 45 minutes to run the simulation of 30 minutes of the network.
 * Jan 22, 2023: I tried running a simulation with 100 nodes and 2,000 validators on a Digital Ocean instance with 8 vCPUs, 16GB of memory, and 16GB of swap space in SSD. It took me 3 hours to run the simulation of 30 minutes of the network.
 * Jan 25, 2023: I tried running a simulation with 200 nodes and 4,000 validators on a Digital Ocean instance with 8 vCPUs, 16GB of memory, and 64GB of swap space in SSD. It took me 17 hours to run the simulation of 30 minutes of the network.
+* Feb 26, 2023: I tried running a simulation with 500 nodes and 2,000 validators on a Digital Ocean instance with 32 vCPUs, 256GB of memory with no swap space. It took me an hour to run the simulation of 10 minutes of the network.
+* Feb 26, 2023: I tried running a simulation with 1,000 nodes and 2,000 validators on a Digital Ocean instance with 32 vCPUs, 256GB of memory, and 64GB of swap space in SSD. It took me 2 hours to run the simulation of 10 minutes of the network.
