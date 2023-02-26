@@ -31,7 +31,7 @@ source "$HOME/.cargo/env"
 sudo apt-get install -y git gcc g++ make cmake pkg-config llvm-dev libclang-dev clang protobuf-compiler
 git clone https://github.com/sigp/lighthouse.git
 cd lighthouse
-git checkout stable
+git checkout v3.4.0
 make
 make install-lcli
 cd ..
