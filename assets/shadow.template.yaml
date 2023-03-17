@@ -9,7 +9,7 @@ network:
         node [
           id 0
           host_bandwidth_up "20 Mbit"
-          host_bandwidth_down "20 Mbit"
+          host_bandwidth_down "100 Mbit"
         ]
         edge [
           source 0
