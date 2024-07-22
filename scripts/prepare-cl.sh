@@ -50,7 +50,7 @@ if ! test -e ./web3/node_modules; then
 fi
 
 # Use the signing node as a node to deploy the deposit contract
-env="NODE_PATH=$(realpath ./web3/node_modules)"
+env="{\"NODE_PATH\": \"$(realpath ./web3/node_modules)\"}"
 args="$(realpath ./web3/src/deploy-deposit-contract.js) \
 --endpoint http://localhost:$SIGNER_HTTP_PORT \
 --file $(realpath ./assets/deposit-contract.json) \
@@ -58,7 +58,7 @@ args="$(realpath ./web3/src/deploy-deposit-contract.js) \
 --block-out $(realpath $CONSENSUS_DIR/deploy_block.txt)"
 yq -i ".hosts.signernode.processes += { \
     \"path\": \"node\", \
-    \"environment\": \"$env\", \
+    \"environment\": $env, \
     \"args\": \"$args\", \
     \"start_time\": $DEPLOY_DEPOSIT_CONTRACT_STARTTIME \
 }" $SHADOW_CONFIG_FILE
@@ -74,7 +74,7 @@ NODE_PATH=./web3/node_modules node ./web3/src/distribute-validators.js \
     > $ROOT/deposit-data.json
 
 # Send the deposits to the deposit contract
-env="NODE_PATH=$(realpath ./web3/node_modules)"
+env="{\"NODE_PATH\": \"$(realpath ./web3/node_modules)\"}"
 args="$(realpath ./web3/src/transfer-deposit.js) \
 --endpoint http://localhost:$SIGNER_HTTP_PORT \
 --address-file $(realpath $ROOT/deposit-address) \
@@ -82,7 +82,7 @@ args="$(realpath ./web3/src/transfer-deposit.js) \
 --deposit-file $(realpath $ROOT/deposit-data.json)"
 yq -i ".hosts.signernode.processes += { \
     \"path\": \"node\", \
-    \"environment\": \"$env\", \
+    \"environment\": $env, \
     \"args\": \"$args\", \
     \"start_time\": $TRANSFER_DEPOSIT_STARTTIME \
 }" $SHADOW_CONFIG_FILE
@@ -109,13 +109,13 @@ echo "BELLATRIX_FORK_EPOCH: \"$BELLATRIX_FORK_EPOCH\"" >> $CONFIG_FILE
 echo "Generated $CONFIG_FILE"
 
 # Fill the contract address in the config file
-env="NODE_PATH=$(realpath ./web3/node_modules)"
+env="{\"NODE_PATH\": \"$(realpath ./web3/node_modules)\"}"
 args="$(realpath ./web3/src/fill-lighthouse-config.js) \
 --address-file $(realpath $ROOT/deposit-address) \
 --config-file $(realpath $CONFIG_FILE)"
 yq -i ".hosts.signernode.processes += { \
     \"path\": \"node\", \
-    \"environment\": \"$env\", \
+    \"environment\": $env, \
     \"args\": \"$args\", \
     \"start_time\": $FILL_LIGHTHOUSE_CONFIG_STARTTIME \
 }" $SHADOW_CONFIG_FILE
