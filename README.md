@@ -2,7 +2,7 @@
 
 *This is a fork of [Pop's code](https://github.com/ppopth/ethereum-shadow), and part of my [EPF Project](https://github.com/eth-protocol-fellows/cohort-five/blob/main/projects/network-simulations-with-shadow.md).*
 
-**This is still very unstable, and the documentation below is not updated yet! You need to use the `shadow` branch my forks of [Geth (for `bootnode`)](https://github.com/dknopik/go-ethereum/tree/shadow) and [Reth](https://github.com/dknopik/reth/tree/shadow) in order to be able to run the simulation. For Lighthouse, you need a recent `unstable` build.**
+**This is still very unstable, and the documentation below is not updated yet! You need to use the `shadow` branch my forks of [Geth (for `bootnode`)](https://github.com/dknopik/go-ethereum/tree/shadow) and [Reth](https://github.com/dknopik/reth/tree/shadow), and the `ethereum` branch of my [Shadow fork](https://github.com/dknopik/shadow/tree/ethereum) in order to be able to run the simulation. For Lighthouse, you need a recent `unstable` build.**
 
 Simulate a full Ethereum network using [Shadow](https://shadow.github.io/), a discrete-event network simulator. The way we run
 the Ethereum network is similar to and adopted from [Local Ethereum Testnet](https://github.com/ppopth/local-testnet).
