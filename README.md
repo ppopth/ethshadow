@@ -1,8 +1,12 @@
 # Discrete-event Ethereum network simulation
 
+*This is a fork of [Pop's code](https://github.com/ppopth/ethereum-shadow), and part of my [EPF Project](https://github.com/eth-protocol-fellows/cohort-five/blob/main/projects/network-simulations-with-shadow.md).*
+
+**This is still very unstable, and the documentation below is not updated yet! You need to use the `shadow` branch my forks of [Geth (for `bootnode`)](https://github.com/dknopik/go-ethereum/tree/shadow) and [Reth](https://github.com/dknopik/reth/tree/shadow) in order to be able to run the simulation. For Lighthouse, you need a recent `unstable` build.**
+
 Simulate a full Ethereum network using [Shadow](https://shadow.github.io/), a discrete-event network simulator. The way we run
 the Ethereum network is similar to and adopted from [Local Ethereum Testnet](https://github.com/ppopth/local-testnet).
-That is, we use [lighthouse](https://github.com/sigp/lighthouse) and [geth](https://github.com/ethereum/go-ethereum) as
+That is, we use [Lighthouse](https://github.com/sigp/lighthouse) and [Reth](https://github.com/ethereum/go-ethereum) as
 the consensus client and execution client respectively. Please read the mentioned link for more detail.
 
 The advantages of using ethereum-shadow is that
@@ -77,9 +81,9 @@ NODE_COUNT=8 VALIDATOR_COUNT=40 ./run.sh
 *Note: new versions of geth and lighthouse can cause the simulation to run unsuccessfully because they will probably contain some syscalls that
 don't support in Shadow yet. As of this writing, it works with geth 1.10.26, lighthouse 3.4.0, and rust 1.65.0*
 
-If you want to specify the paths for your own geth and lighthouse binaries, you can do so by setting GETH_CMD and LIGHTHOUSE_CMD environment variables.
+If you want to specify the paths for your own geth and lighthouse binaries, you can do so by setting RETH_CMD and LIGHTHOUSE_CMD environment variables.
 ```bash
-GETH_CMD=~/repos/go-ethereum/build/bin/geth LIGHTHOUSE_CMD=~/repos/lighthouse/target/release/lighthouse ./run.sh
+RETH_CMD=~/repos/go-ethereum/build/bin/geth LIGHTHOUSE_CMD=~/repos/lighthouse/target/release/lighthouse ./run.sh
 ```
 
 ## Simulation Result

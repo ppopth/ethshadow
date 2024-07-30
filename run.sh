@@ -20,12 +20,12 @@ if test -e $ROOT; then
 fi
 
 check_cmd shadow "See https://shadow.github.io/docs/guide/install_shadow.html for installation, but use the \"ethereum\" branch from https://github.com/ppopth/shadow instead."
-check_cmd geth "See https://geth.ethereum.org/docs/getting-started/installing-geth for more detail."
+check_cmd bootnode "See https://geth.ethereum.org/docs/getting-started/installing-geth for more detail."
+check_cmd reth "See reth's docs for more detail."
 check_cmd lighthouse "See https://lighthouse-book.sigmaprime.io/installation.html for more detail."
 check_cmd lcli "See https://lighthouse-book.sigmaprime.io/installation-source.html and run \"make install-lcli\"."
 check_cmd yq "See https://github.com/mikefarah/yq for more detail."
-check_cmd npm "See https://nodejs.org/en/download/ for more detail."
-check_cmd node "See https://nodejs.org/en/download/ for more detail."
+check_cmd docker "See https://docs.docker.com/engine/install/ for more detail."
 
 mkdir -p $ROOT
 
@@ -36,7 +36,7 @@ cp $SHADOW_CONFIG_TEMPLATE_FILE $SHADOW_CONFIG_FILE
 
 yq -i ".general.stop_time = $STOP_TIME" $SHADOW_CONFIG_FILE
 
-for (( node=1; node<=$NODE_COUNT; node++ )); do
+for (( node=0; node<$NODE_COUNT; node++ )); do
     node_ip $node
     yq -i ".hosts.node$node = { \
         \"network_node_id\": 0, \
@@ -44,6 +44,12 @@ for (( node=1; node<=$NODE_COUNT; node++ )); do
         \"processes\": [] \
     }" $SHADOW_CONFIG_FILE
 done
+
+envsubst < $PWD/assets/genesis.env > $ROOT/values.env
+
+docker run --rm -it -u $UID -v $ROOT:/data \
+  -v $ROOT/values.env:/config/values.env \
+  ethpandaops/ethereum-genesis-generator:3.3.5 all
 
 if ! ./scripts/prepare-el.sh; then
     echo -e "\n*Failed!* in the execution layer preparation step\n"
@@ -55,5 +61,5 @@ if ! ./scripts/prepare-cl.sh; then
 fi
 
 if test -z "$GENONLY"; then
-    shadow -p $PARALLELISM -d $SHADOW_DIR $SHADOW_CONFIG_FILE --use-memory-manager false --progress true > $ROOT/shadow.log
+    shadow -p $PARALLELISM -d $SHADOW_DIR $SHADOW_CONFIG_FILE --model-unblocked-syscall-latency true --use-memory-manager false --progress true > $ROOT/shadow.log
 fi

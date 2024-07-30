@@ -1,7 +1,7 @@
 source ./vars.env
 
 el_data_dir() {
-    el_data_dir="$ROOT/node$1/ethereum"
+    el_data_dir="$ROOT/node$1/reth"
 }
 
 cl_data_dir() {
