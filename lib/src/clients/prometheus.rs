@@ -1,0 +1,77 @@
+use crate::clients::Client;
+use crate::config::shadow::Process;
+use crate::error::Error;
+use crate::node::{Node, SimulationContext};
+use crate::validators::Validator;
+use crate::CowStr;
+use serde::{Deserialize, Serialize};
+use serde_yaml::to_writer;
+use std::fs::File;
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(default)]
+pub struct Prometheus {
+    executable: CowStr,
+}
+
+impl Default for Prometheus {
+    fn default() -> Self {
+        Self {
+            executable: "prometheus".into(),
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct PrometheusYaml<'a> {
+    scrape_configs: Vec<ScrapeConfig<'a>>,
+}
+
+#[derive(Serialize)]
+struct ScrapeConfig<'a> {
+    job_name: String,
+    scrape_interval: String,
+    static_configs: Vec<StaticConfig<'a>>,
+}
+
+#[derive(Serialize)]
+struct StaticConfig<'a> {
+    targets: &'a [String],
+}
+
+#[typetag::deserialize(name = "prometheus")]
+impl Client for Prometheus {
+    fn add_to_node(
+        &self,
+        node: &Node,
+        ctx: &mut SimulationContext,
+        _validators: &[Validator],
+    ) -> Result<Process, Error> {
+        let dir = node.dir().join("prometheus");
+        let config_file = node.dir().join("prometheus.yaml");
+
+        let config = PrometheusYaml {
+            scrape_configs: vec![ScrapeConfig {
+                job_name: "lighthouses".to_string(),
+                scrape_interval: "15s".to_string(),
+                static_configs: vec![StaticConfig {
+                    targets: ctx.cl_monitoring_endpoints(),
+                }],
+            }],
+        };
+
+        to_writer(File::create_new(&config_file)?, &config)?;
+
+        Ok(Process {
+            path: self.executable.clone(),
+            args: format!(
+                "--storage.tsdb.path={} --config.file={}",
+                dir.to_str().ok_or(Error::NonUTF8Path)?,
+                config_file.to_str().ok_or(Error::NonUTF8Path)?,
+            ),
+            environment: Default::default(),
+            expected_final_state: "running".into(),
+            start_time: "11s".into(),
+        })
+    }
+}

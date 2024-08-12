@@ -45,7 +45,7 @@ git clone https://github.com/ethereum/go-ethereum.git
 cd go-ethereum
 git checkout v1.10.26
 make all
-cp ./build/bin/geth ./build/bin/bootnode /usr/bin
+cp ./cache/bin/geth ./cache/bin/bootnode /usr/bin
 cd ..
 
 # Install Node.js
@@ -61,7 +61,7 @@ snap install yq
 sudo apt-get install -y glib2.0-dev
 git clone https://github.com/ppopth/shadow.git
 cd shadow
-./setup build
+./setup cache
 ./setup install
 # If ~/.local/bin is not already in your PATH, run the following command
 echo 'export PATH="${PATH}:${HOME}/.local/bin"' >> ~/.bashrc && source ~/.bashrc
@@ -83,7 +83,7 @@ don't support in Shadow yet. As of this writing, it works with geth 1.10.26, lig
 
 If you want to specify the paths for your own geth and lighthouse binaries, you can do so by setting RETH_CMD and LIGHTHOUSE_CMD environment variables.
 ```bash
-RETH_CMD=~/repos/go-ethereum/build/bin/geth LIGHTHOUSE_CMD=~/repos/lighthouse/target/release/lighthouse ./run.sh
+RETH_CMD=~/repos/go-ethereum/cache/bin/geth LIGHTHOUSE_CMD=~/repos/lighthouse/target/release/lighthouse ./run.sh
 ```
 
 ## Simulation Result

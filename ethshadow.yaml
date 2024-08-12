@@ -1,0 +1,43 @@
+general:
+  model_unblocked_syscall_latency: true
+  stop_time: 30m
+  progress: true
+  parallelism: 16
+
+ethereum:
+  validators: 160
+  nodes:
+    - location: europe
+      reliability: reliable
+      tag: boot
+      clients:
+        el: geth_bootnode
+        cl: lighthouse_bootnode
+    - locations:
+        - europe
+        - na_east
+        - na_west
+        - east_asia
+      reliabilities:
+        - reliable
+        - home
+    - location: europe
+      reliability: reliable
+      tag: monitoring
+      clients:
+        monitoring: prometheus
+    - location: europe
+      reliability: reliable
+      tag: spammer
+      clients:
+        spamming: blob_spammer
+  clients:
+    blob_spammer:
+      type: blob_spammer
+      executable: build/blob-spammer
+      private_key: "087e1e65a8127930dc08bc7cfcf2dd19400112910e40247dfe71a1d82365958d"
+      throughput: 3
+      start_time: 330s
+  genesis:
+    premine:
+      5E015fB7fdD3882dd62C5A7fDc41E02cAE6ce459: 1000000

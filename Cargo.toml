@@ -1,0 +1,32 @@
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+# rust-version = "1.80.0" TODO
+license = "GPL-3"
+description = "Configuration utility for Ethereum network simulations in Shadow"
+authors = ["Daniel Knopik <daniel@dknopik.de>"]
+
+[workspace]
+members = ["lib"]
+resolver = "2"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = true
+
+[package]
+name = "ethshadow-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "ethshadow"
+path = "ethshadow.rs"
+
+[dependencies]
+ethshadow = { path = "lib" }
+clap = { version = "4.5", features = ["cargo"] }

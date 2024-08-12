@@ -1,0 +1,20 @@
+[package]
+name = "ethshadow"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description.workspace = true
+authors.workspace = true
+
+[dependencies]
+#shadow-rs = { git = "https://github.com/dknopik/shadow", branch = "ethereum" }
+serde_yaml = "0.9" # deprecated, but stable, and what shadow uses
+serde = { version = "1.0", features = ["derive"] }
+humantime-serde = "1.1"
+thiserror = "1.0"
+rand = "0.8.5"
+libsecp256k1 = "0.7.1"
+hex = "0.4.3"
+typetag = "0.2"
+itertools = "0.13"
+users = "0.11"
