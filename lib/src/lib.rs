@@ -77,7 +77,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
             .genesis
             .generator_image
             .as_deref()
-            .unwrap_or("ethpandaops/ethereum-genesis-generator:3.3.5"),
+            .unwrap_or("ethpandaops/ethereum-genesis-generator:3.3.7"),
         dir_path,
     )?;
 

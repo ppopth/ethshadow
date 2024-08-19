@@ -60,4 +60,4 @@ ethereum:
   genesis:
     eip7594_epoch: 0
     premine:
-      5E015fB7fdD3882dd62C5A7fDc41E02cAE6ce459: 1000000
+      5E015fB7fdD3882dd62C5A7fDc41E02cAE6ce459: 1000000ETH

@@ -116,11 +116,7 @@ pub fn write_config(config: &EthShadowConfig, mut output_path: PathBuf) -> Resul
         "DATA_COLUMN_SIDECAR_SUBNET_COUNT",
         genesis.data_column_sidecar_subnet_count,
     )?;
-    export_optional(
-        file,
-        "TARGET_NUMBER_OF_PEERS",
-        genesis.target_number_of_peers,
-    )?;
+    export_optional(file, "MAX_BLOBS_PER_BLOCK", genesis.max_blobs_per_block)?;
 
     if let Some(premine) = genesis.premine.as_ref() {
         export(
@@ -130,7 +126,7 @@ pub fn write_config(config: &EthShadowConfig, mut output_path: PathBuf) -> Resul
                 "{{{}}}",
                 premine
                     .iter()
-                    .map(|(addr, amount)| format!("\\\"{addr}\\\": \\\"{amount}ETH\\\""))
+                    .map(|(addr, amount)| format!("\\\"{addr}\\\": \\\"{amount}\\\""))
                     .collect::<Vec<_>>()
                     .join(",")
             ),
