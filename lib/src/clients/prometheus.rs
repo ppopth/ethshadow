@@ -6,6 +6,7 @@ use crate::validators::Validator;
 use crate::CowStr;
 use serde::{Deserialize, Serialize};
 use serde_yaml::to_writer;
+use std::collections::HashMap;
 use std::fs::File;
 
 #[derive(Deserialize, Debug, Clone)]
@@ -37,6 +38,7 @@ struct ScrapeConfig<'a> {
 #[derive(Serialize)]
 struct StaticConfig<'a> {
     targets: &'a [String],
+    labels: HashMap<&'a str, &'a str>,
 }
 
 #[typetag::deserialize(name = "prometheus")]
@@ -54,9 +56,16 @@ impl Client for Prometheus {
             scrape_configs: vec![ScrapeConfig {
                 job_name: "lighthouses".to_string(),
                 scrape_interval: "15s".to_string(),
-                static_configs: vec![StaticConfig {
-                    targets: ctx.cl_monitoring_endpoints(),
-                }],
+                static_configs: ctx
+                    .cl_monitoring_endpoints()
+                    .iter()
+                    .map(|((location, reliability), targets)| StaticConfig {
+                        targets,
+                        labels: [("location", *location), ("reliability", *reliability)]
+                            .into_iter()
+                            .collect(),
+                    })
+                    .collect(),
             }],
         };
 

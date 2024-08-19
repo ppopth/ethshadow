@@ -1,16 +1,16 @@
 use crate::config::EthShadowConfig;
 use crate::error::Error;
 use crate::gml::{Gml, NetworkNode};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 pub struct NetworkGraph<'a> {
     pub gml: String,
-    pub nodes: HashMap<(&'a str, &'a str), NetworkNode>,
+    pub nodes: BTreeMap<(&'a str, &'a str), NetworkNode>,
 }
 
 pub fn generate_network_graph(config: &EthShadowConfig) -> Result<NetworkGraph, Error> {
     let mut gml = String::new();
-    let mut nodes = HashMap::<(&str, &str), NetworkNode>::new();
+    let mut nodes = BTreeMap::<(&str, &str), NetworkNode>::new();
     let mut graph = Gml::new(&mut gml, true)?;
     for location_name in config.locations.keys() {
         for (reliability_name, reliability) in config.reliabilities.iter() {

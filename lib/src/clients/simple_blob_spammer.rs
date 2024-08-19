@@ -7,15 +7,16 @@ use itertools::Itertools;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct BlobSpammer {
+pub struct SimpleBlobSpammer {
     executable: String,
     private_key: String,
-    throughput: u8,
+    min_per_slot: u8,
+    max_per_slot: u8,
     start_time: String,
 }
 
-#[typetag::deserialize(name = "blob_spammer")]
-impl Client for BlobSpammer {
+#[typetag::deserialize(name = "simple_blob_spammer")]
+impl Client for SimpleBlobSpammer {
     fn add_to_node(
         &self,
         _node: &Node,
@@ -25,10 +26,11 @@ impl Client for BlobSpammer {
         Ok(Process {
             path: self.executable.clone().into(),
             args: format!(
-                "combined -t {} -p {} -h {}",
-                self.throughput,
+                "--min {} --max {} --key {} --rpcs {}",
+                self.min_per_slot,
+                self.max_per_slot,
                 self.private_key,
-                ctx.el_http_endpoints().iter().join(" -h "),
+                ctx.el_http_endpoints().iter().join(","),
             ),
             environment: Default::default(),
             expected_final_state: "running".into(),

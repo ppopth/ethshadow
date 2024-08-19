@@ -5,7 +5,7 @@ use std::fmt::Display;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::process::Command;
 use users::get_current_uid;
 
 pub const DEFAULT_MNEMONIC: &str = "\
@@ -73,7 +73,11 @@ pub fn write_config(config: &EthShadowConfig, mut output_path: PathBuf) -> Resul
         genesis.electra_epoch.unwrap_or(9999999),
     )?;
     export(file, "EIP7594_FORK_VERSION", "0x70000000")?;
-    export(file, "EIP7594_FORK_EPOCH", "999999999")?;
+    export(
+        file,
+        "EIP7594_FORK_EPOCH",
+        genesis.eip7594_epoch.unwrap_or(99999999),
+    )?;
     export(file, "WITHDRAWAL_TYPE", "0x01")?;
     export(
         file,
@@ -122,11 +126,14 @@ pub fn write_config(config: &EthShadowConfig, mut output_path: PathBuf) -> Resul
         export(
             file,
             "EL_PREMINE_ADDRS",
-            format!("{{{}}}", premine
-                .iter()
-                .map(|(addr, amount)| format!("\\\"{addr}\\\": \\\"{amount}ETH\\\""))
-                .collect::<Vec<_>>()
-                .join(",")),
+            format!(
+                "{{{}}}",
+                premine
+                    .iter()
+                    .map(|(addr, amount)| format!("\\\"{addr}\\\": \\\"{amount}ETH\\\""))
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ),
         )?;
     }
     //export(file, "ADDITIONAL_PRELOADED_CONTRACTS", )?;

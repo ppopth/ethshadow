@@ -13,9 +13,9 @@ pub mod geth_bootnode;
 pub mod lighthouse;
 pub mod lighthouse_bootnode;
 pub mod lighthouse_vc;
-pub mod reth;
 pub mod prometheus;
-pub mod blob_spammer;
+pub mod reth;
+pub mod simple_blob_spammer;
 
 pub enum ValidatorDemand {
     /// We do not need validator keys. The validator slice will be empty.
@@ -33,10 +33,10 @@ pub enum ValidatorDemand {
 
 #[typetag::deserialize(tag = "type")]
 pub trait Client: Debug {
-    fn add_to_node(
+    fn add_to_node<'a>(
         &self,
-        node: &Node,
-        ctx: &mut SimulationContext,
+        node: &Node<'a>,
+        ctx: &mut SimulationContext<'a>,
         validators: &[Validator],
     ) -> Result<Process, Error>;
 

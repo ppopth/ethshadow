@@ -15,22 +15,24 @@ const PORT: &str = "31000";
 #[serde(default)]
 pub struct Lighthouse {
     pub executable: CowStr,
+    pub extra_args: String,
 }
 
 impl Default for Lighthouse {
     fn default() -> Self {
         Self {
             executable: "lighthouse".into(),
+            extra_args: "".into(),
         }
     }
 }
 
 #[typetag::deserialize(name = "lighthouse")]
 impl Client for Lighthouse {
-    fn add_to_node(
+    fn add_to_node<'a>(
         &self,
-        node: &Node,
-        ctx: &mut SimulationContext,
+        node: &Node<'a>,
+        ctx: &mut SimulationContext<'a>,
         _validators: &[Validator],
     ) -> Result<Process, Error> {
         let dir = node.dir().join("lighthouse");
@@ -39,7 +41,11 @@ impl Client for Lighthouse {
         let ip = node.ip();
 
         ctx.add_cl_http_endpoint(format!("{ip}:{BEACON_API_PORT}"));
-        ctx.add_cl_monitoring_endpoint(format!("{ip}:{CL_PROMETHEUS_PORT}"));
+        ctx.add_cl_monitoring_endpoint(
+            node.location(),
+            node.reliability(),
+            format!("{ip}:{CL_PROMETHEUS_PORT}"),
+        );
 
         Ok(Process {
             path: self.executable.clone(),
@@ -61,10 +67,11 @@ impl Client for Lighthouse {
                 --disable-packet-filter \
                 --metrics-address 0.0.0.0 \
                 --metrics-port {CL_PROMETHEUS_PORT} \
-                --metrics",
+                --metrics {}",
                 ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
                 ctx.jwt_path().to_str().ok_or(Error::NonUTF8Path)?,
                 ctx.cl_bootnode_enrs().join(","),
+                self.extra_args,
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),

@@ -1,7 +1,8 @@
 use crate::error::Error;
 use crate::CowStr;
 use serde::Serialize;
-use serde_yaml::{to_value, Mapping};
+use serde_yaml::mapping::IterMut;
+use serde_yaml::{to_value, Mapping, Value};
 use std::collections::HashMap;
 
 macro_rules! get_as {
@@ -77,5 +78,46 @@ impl ShadowConfig {
         } else {
             Ok(())
         }
+    }
+
+    pub fn hosts_mut(&mut self) -> Result<HostsMut, Error> {
+        Ok(HostsMut {
+            hosts: self
+                .0
+                .get_mut("hosts")
+                .map(|h| {
+                    h.as_mapping_mut()
+                        .ok_or_else(|| Error::ExpectedOtherType("hosts".to_string()))
+                })
+                .transpose()?
+                .map(|h| h.iter_mut()),
+        })
+    }
+}
+
+pub struct HostsMut<'a> {
+    hosts: Option<IterMut<'a>>,
+}
+
+impl<'a> Iterator for HostsMut<'a> {
+    type Item = Result<UntypedHost<&'a mut Mapping>, Error>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.hosts
+            .as_mut()
+            .and_then(|hosts| hosts.next())
+            .map(|(_, host)| {
+                host.as_mapping_mut()
+                    .ok_or_else(|| Error::ExpectedOtherType("host".to_string()))
+                    .map(UntypedHost)
+            })
+    }
+}
+
+pub struct UntypedHost<T>(T);
+
+impl<'a> UntypedHost<&'a mut Mapping> {
+    pub fn network_node_id_mut(&mut self) -> Option<&mut Value> {
+        self.0.get_mut("network_node_id")
     }
 }

@@ -5,9 +5,9 @@
 //! clap = { version = "4.5", features = ["cargo"] }
 //! ```
 
-use std::env;
 use clap::{arg, command, value_parser};
 use ethshadow::generate;
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::os::unix::prelude::CommandExt;

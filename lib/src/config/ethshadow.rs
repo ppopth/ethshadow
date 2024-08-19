@@ -2,6 +2,7 @@ use crate::clients::geth_bootnode::GethBootnode;
 use crate::clients::lighthouse::Lighthouse;
 use crate::clients::lighthouse_bootnode::LighthouseBootnode;
 use crate::clients::lighthouse_vc::LighthouseValidatorClient;
+use crate::clients::prometheus::Prometheus;
 use crate::clients::reth::Reth;
 use crate::clients::Client;
 use crate::config::one_or_many::OneOrMany;
@@ -12,7 +13,6 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::Duration;
-use crate::clients::prometheus::Prometheus;
 
 /// Options contained in the configuration file.
 #[derive(Deserialize, Debug, Default)]
@@ -100,7 +100,9 @@ impl Node {
 
 #[derive(Deserialize, Clone, Copy, Debug)]
 pub enum NodeCount {
+    #[serde(rename = "per_combination")]
     CountPerCombination(u64),
+    #[serde(rename = "total")]
     TotalCount(u64),
 }
 
@@ -135,6 +137,7 @@ pub struct Genesis {
     pub capella_epoch: Option<u64>,
     pub deneb_epoch: Option<u64>,
     pub electra_epoch: Option<u64>,
+    pub eip7594_epoch: Option<u64>,
     pub withdrawal_address: Option<String>,
     pub delay: Option<u64>,
     pub gaslimit: Option<u64>,
@@ -287,7 +290,7 @@ impl EthShadowConfig {
         self.add_builtin_reliability(
             "constrained",
             Reliability {
-                added_latency: Duration::from_millis(10).into(),
+                added_latency: Duration::from_millis(20).into(),
                 added_packet_loss: 0.001,
                 bandwidth_up: "5 Mbit".into(),
                 bandwidth_down: "5 Mbit".into(),
@@ -308,7 +311,6 @@ impl EthShadowConfig {
         self.add_builtin_client("lighthouse", Lighthouse::default());
         self.add_builtin_client("lighthouse_vc", LighthouseValidatorClient::default());
         self.add_builtin_client("prometheus", Prometheus::default());
-        self.add_builtin_client("blob_spammer", Prometheus::default());
     }
 
     fn add_builtin_location<const N: usize>(

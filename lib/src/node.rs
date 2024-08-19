@@ -6,30 +6,32 @@ use crate::gml::NetworkNode;
 use crate::validators::Validator;
 use rand::prelude::StdRng;
 use rand::Rng;
-use std::collections::{HashMap, HashSet};
-use std::fs::create_dir;
+use std::collections::{BTreeMap, HashMap, HashSet};
+use std::fs::{create_dir, File};
 use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
 
 pub struct NodeManager<'c, 'n> {
-    ctx: SimulationContext,
+    ctx: SimulationContext<'n>,
     base_dir: PathBuf,
     shadow_config: &'c mut ShadowConfig,
-    network_nodes: HashMap<(&'n str, &'n str), NetworkNode>,
+    network_nodes: BTreeMap<(&'n str, &'n str), NetworkNode>,
     used_ips: HashSet<Ipv4Addr>,
 }
 
-pub struct Node {
+pub struct Node<'a> {
     ip: Ipv4Addr,
     dir: PathBuf,
+    location: &'a str,
+    reliability: &'a str,
 }
 
 impl<'c, 'n> NodeManager<'c, 'n> {
     pub fn new(
-        ctx: SimulationContext,
+        ctx: SimulationContext<'n>,
         base_dir: PathBuf,
         shadow_config: &'c mut ShadowConfig,
-        network_nodes: HashMap<(&'n str, &'n str), NetworkNode>,
+        network_nodes: BTreeMap<(&'n str, &'n str), NetworkNode>,
     ) -> Self {
         Self {
             ctx,
@@ -44,8 +46,8 @@ impl<'c, 'n> NodeManager<'c, 'n> {
         &mut self,
         tag: &str,
         clients: &[(&dyn Client, &[Validator])],
-        location_name: &str,
-        reliability_name: &str,
+        location_name: &'n str,
+        reliability_name: &'n str,
     ) -> Result<(), Error> {
         let idx = self.used_ips.len();
         let name = format!("node{idx}{tag}");
@@ -53,12 +55,20 @@ impl<'c, 'n> NodeManager<'c, 'n> {
         let dir = self.base_dir.join(&name);
         create_dir(&dir)?;
 
+        File::create_new(dir.join(location_name))?;
+        File::create_new(dir.join(reliability_name))?;
+
         let mut ip = random_ip(self.ctx.rng());
         while !self.used_ips.insert(ip) {
             ip = random_ip(self.ctx.rng());
         }
 
-        let node = Node { ip, dir };
+        let node = Node {
+            ip,
+            dir,
+            location: location_name,
+            reliability: reliability_name,
+        };
 
         let mut host = Host {
             ip_addr: ip.to_string(),
@@ -86,13 +96,21 @@ impl<'c, 'n> NodeManager<'c, 'n> {
     }
 }
 
-impl Node {
+impl<'a> Node<'a> {
     pub fn ip(&self) -> Ipv4Addr {
         self.ip
     }
 
     pub fn dir(&self) -> &Path {
         self.dir.as_path()
+    }
+
+    pub fn location(&self) -> &'a str {
+        self.location
+    }
+
+    pub fn reliability(&self) -> &'a str {
+        self.reliability
     }
 }
 
@@ -110,7 +128,7 @@ fn random_ip<R: Rng>(rng: &mut R) -> Ipv4Addr {
     )
 }
 
-pub struct SimulationContext {
+pub struct SimulationContext<'a> {
     rng: StdRng,
     metadata_path: PathBuf,
     validators_path: PathBuf,
@@ -119,10 +137,10 @@ pub struct SimulationContext {
     cl_bootnode_enrs: Vec<String>,
     el_http_endpoints: Vec<String>,
     cl_http_endpoints: Vec<String>,
-    cl_monitoring_endpoints: Vec<String>,
+    cl_monitoring_endpoints: HashMap<(&'a str, &'a str), Vec<String>>,
 }
 
-impl SimulationContext {
+impl<'a> SimulationContext<'a> {
     pub fn new(
         rng: StdRng,
         metadata_path: PathBuf,
@@ -138,7 +156,7 @@ impl SimulationContext {
             cl_bootnode_enrs: vec![],
             el_http_endpoints: vec![],
             cl_http_endpoints: vec![],
-            cl_monitoring_endpoints: vec![],
+            cl_monitoring_endpoints: HashMap::new(),
         }
     }
 
@@ -174,8 +192,8 @@ impl SimulationContext {
         self.cl_http_endpoints.as_slice()
     }
 
-    pub fn cl_monitoring_endpoints(&self) -> &[String] {
-        self.cl_monitoring_endpoints.as_slice()
+    pub fn cl_monitoring_endpoints(&self) -> &HashMap<(&str, &str), Vec<String>> {
+        &self.cl_monitoring_endpoints
     }
 
     pub fn add_el_bootnode_enode(&mut self, enode: String) {
@@ -194,7 +212,15 @@ impl SimulationContext {
         self.cl_http_endpoints.push(endpoint);
     }
 
-    pub fn add_cl_monitoring_endpoint(&mut self, endpoint: String) {
-        self.cl_monitoring_endpoints.push(endpoint);
+    pub fn add_cl_monitoring_endpoint(
+        &mut self,
+        location: &'a str,
+        reliability: &'a str,
+        endpoint: String,
+    ) {
+        self.cl_monitoring_endpoints
+            .entry((location, reliability))
+            .or_default()
+            .push(endpoint);
     }
 }

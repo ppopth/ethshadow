@@ -10,10 +10,11 @@ use crate::network_graph::generate_network_graph;
 use crate::node::{NodeManager, SimulationContext};
 use itertools::Itertools;
 use rand::prelude::*;
+use serde_yaml::Value;
 use std::borrow::Cow;
 use std::ffi::{OsStr, OsString};
 use std::fs::{create_dir, File};
-use std::path::{PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
 mod clients;
@@ -83,6 +84,27 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
     // generate network graph
     let network_graph = generate_network_graph(&ethshadow_config)?;
     shadow_config.set_network(network_graph.gml, false)?;
+
+    // postprocessing given shadow config values: overwrite string network ids
+    for host in shadow_config.hosts_mut()? {
+        if let Some(node_id) = host?.network_node_id_mut() {
+            if let Some((location, reliability)) = node_id.as_str().and_then(|s| s.split_once("-"))
+            {
+                let node = network_graph
+                    .nodes
+                    .get(&(location, reliability))
+                    .ok_or_else(|| {
+                        Error::UnknownLocationReliability(
+                            location.to_string(),
+                            reliability.to_string(),
+                        )
+                    })?;
+                *node_id = Value::Number(node.id().into());
+            } else {
+                return Err(Error::ExpectedOtherType("network_node_id".to_string()));
+            }
+        }
+    }
 
     // generate nodes TODO clean up and organize...
     let nodes = match &ethshadow_config.nodes {
@@ -210,30 +232,32 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
                     })
                     .multi_cartesian_product()
                 {
-                    let client_stack: Vec<_> = client_stack
-                        .into_iter()
-                        .filter_map(|client| match client {
-                            Ok(client) => match client.validator_demand() {
-                                ValidatorDemand::None => Some(Ok((client.as_ref(), 0))),
-                                demand @ ValidatorDemand::Any
-                                | demand @ ValidatorDemand::AnyNonZero => {
-                                    let mut val_count = val_for_each_any;
-                                    if encountered_anys < get_one_val_extra {
-                                        val_count += 1;
-                                    }
-                                    encountered_anys += 1;
-                                    if val_count > 0 || matches!(demand, ValidatorDemand::Any) {
-                                        Some(Ok((client.as_ref(), val_count)))
-                                    } else {
-                                        None
-                                    }
-                                }
-                                ValidatorDemand::Count(count) => Some(Ok((client.as_ref(), count))),
-                            },
-                            Err(client) => Some(Err(Error::UnknownClient(client))),
-                        })
-                        .try_collect()?;
                     for _ in 0..(node.count()? / node.combinations()) {
+                        let client_stack: Vec<_> = client_stack
+                            .iter()
+                            .filter_map(|client| match client {
+                                Ok(client) => match client.validator_demand() {
+                                    ValidatorDemand::None => Some(Ok((client.as_ref(), 0))),
+                                    demand @ ValidatorDemand::Any
+                                    | demand @ ValidatorDemand::AnyNonZero => {
+                                        let mut val_count = val_for_each_any;
+                                        if encountered_anys < get_one_val_extra {
+                                            val_count += 1;
+                                        }
+                                        encountered_anys += 1;
+                                        if val_count > 0 || matches!(demand, ValidatorDemand::Any) {
+                                            Some(Ok((client.as_ref(), val_count)))
+                                        } else {
+                                            None
+                                        }
+                                    }
+                                    ValidatorDemand::Count(count) => {
+                                        Some(Ok((client.as_ref(), count)))
+                                    }
+                                },
+                                Err(client) => Some(Err(Error::UnknownClient(client.clone()))),
+                            })
+                            .try_collect()?;
                         let client_stack: Vec<_> = client_stack
                             .iter()
                             .map(|(client, val_count)| (*client, validators(*val_count)))
