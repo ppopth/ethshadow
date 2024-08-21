@@ -26,6 +26,8 @@ mod network_graph;
 mod node;
 mod validators;
 
+const DEFAULT_GENESIS_GEN_IMAGE: &str = "ethpandaops/ethereum-genesis-generator:3.3.7";
+
 type CowStr = Cow<'static, str>;
 
 pub struct ShadowInvocation {
@@ -77,7 +79,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
             .genesis
             .generator_image
             .as_deref()
-            .unwrap_or("ethpandaops/ethereum-genesis-generator:3.3.7"),
+            .unwrap_or(DEFAULT_GENESIS_GEN_IMAGE),
         dir_path,
     )?;
 
@@ -186,7 +188,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
             .genesis
             .generator_image
             .as_deref()
-            .unwrap_or("ethpandaops/ethereum-genesis-generator:3.3.5"),
+            .unwrap_or(DEFAULT_GENESIS_GEN_IMAGE),
         &output_path,
         ethshadow_config
             .genesis
