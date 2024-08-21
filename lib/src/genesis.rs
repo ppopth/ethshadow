@@ -159,7 +159,7 @@ pub fn generate(image_name: &str, output_path: OsString) -> Result<(), Error> {
     let mut config_mount = output_path;
     config_mount.push("/values.env:/config/values.env");
     let status = Command::new("docker")
-        .args(["run", "--rm", "-it", "-u"])
+        .args(["run", "--rm", "-i", "-u"])
         .arg(get_current_uid().to_string())
         .arg("-v")
         .arg(data_mount)
