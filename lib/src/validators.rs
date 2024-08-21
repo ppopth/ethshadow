@@ -15,7 +15,7 @@ pub fn generate(
     let mut data_mount = output_path.as_os_str().to_owned();
     data_mount.push(":/data");
     let status = Command::new("docker")
-        .args(["run", "--rm", "-it", "-u"])
+        .args(["run", "--rm", "-i", "-u"])
         .arg(get_current_uid().to_string())
         .arg("-v")
         .arg(data_mount)
