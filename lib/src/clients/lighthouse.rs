@@ -5,7 +5,6 @@ use crate::error::Error;
 use crate::node::{Node, SimulationContext};
 use crate::validators::Validator;
 use crate::CowStr;
-use rand::Rng;
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -75,7 +74,7 @@ impl Client for Lighthouse {
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),
-            start_time: format!("{}ms", ctx.rng().gen_range(5000..10000)).into(),
+            start_time: "5ms".into(),
         })
     }
 }
