@@ -151,7 +151,7 @@ pub struct Genesis {
     pub custody_requirement: Option<u64>,
     pub data_column_sidecar_subnet_count: Option<u64>,
     pub max_blobs_per_block: Option<u64>,
-    pub premine: Option<HashMap<String, u32>>,
+    pub premine: Option<HashMap<String, String>>,
 }
 
 impl EthShadowConfig {
