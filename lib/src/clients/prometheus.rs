@@ -80,7 +80,7 @@ impl Client for Prometheus {
             ),
             environment: Default::default(),
             expected_final_state: "running".into(),
-            start_time: "11s".into(),
+            start_time: "10s".into(),
         })
     }
 }

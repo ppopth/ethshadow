@@ -76,7 +76,7 @@ impl Client for LighthouseBootnode {
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),
-            start_time: "5ms".into(),
+            start_time: "0s".into(),
         })
     }
 }
