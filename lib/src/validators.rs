@@ -34,7 +34,7 @@ pub fn generate(
             .arg("--source-min")
             .arg(validators.len().to_string())
             .arg("--source-max")
-            .arg(min(validators.len() + 5000, total_val).to_string())
+            .arg(min(validators.len() + 4000, total_val).to_string())
             .spawn()?
             .wait()?;
         if !status.success() {
