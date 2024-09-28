@@ -131,7 +131,6 @@ fn random_ip<R: Rng>(rng: &mut R) -> Ipv4Addr {
 pub struct SimulationContext<'a> {
     rng: StdRng,
     metadata_path: PathBuf,
-    validators_path: PathBuf,
     jwt_path: PathBuf,
     el_bootnode_enodes: Vec<String>,
     cl_bootnode_enrs: Vec<String>,
@@ -141,16 +140,10 @@ pub struct SimulationContext<'a> {
 }
 
 impl<'a> SimulationContext<'a> {
-    pub fn new(
-        rng: StdRng,
-        metadata_path: PathBuf,
-        validators_path: PathBuf,
-        jwt_path: PathBuf,
-    ) -> Self {
+    pub fn new(rng: StdRng, metadata_path: PathBuf, jwt_path: PathBuf) -> Self {
         Self {
             rng,
             metadata_path,
-            validators_path,
             jwt_path,
             el_bootnode_enodes: vec![],
             cl_bootnode_enrs: vec![],
@@ -166,10 +159,6 @@ impl<'a> SimulationContext<'a> {
 
     pub fn metadata_path(&self) -> &Path {
         self.metadata_path.as_path()
-    }
-
-    pub fn validators_path(&self) -> &Path {
-        self.validators_path.as_path()
     }
 
     pub fn jwt_path(&self) -> &Path {

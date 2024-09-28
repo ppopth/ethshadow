@@ -11,12 +11,13 @@ pub fn generate(
     image_name: &str,
     output_path: &Path,
     mnemonic: &str,
-    total_val: u64,
-) -> Result<(PathBuf, Vec<Validator>), Error> {
-    let mut generated = 0;
+    total_val: usize,
+) -> Result<Vec<Validator>, Error> {
+    let mut validators = Vec::with_capacity(total_val);
+    let mut idx = 0;
     let mut data_mount = output_path.as_os_str().to_owned();
     data_mount.push(":/data");
-    while generated < total_val {
+    while validators.len() < total_val {
         let status = Command::new("docker")
             .args(["run", "--rm", "-i", "-u"])
             .arg(get_current_uid().to_string())
@@ -27,33 +28,40 @@ pub fn generate(
             .arg("keystores")
             .arg("--insecure")
             .arg("--out-loc")
-            .arg("/data/validator_keys")
+            .arg(format!("/data/validator_keys_{idx}"))
             .arg("--source-mnemonic")
             .arg(mnemonic)
             .arg("--source-min")
-            .arg(generated.to_string())
+            .arg(validators.len().to_string())
             .arg("--source-max")
-            .arg(min(generated + 5000, total_val).to_string())
+            .arg(min(validators.len() + 5000, total_val).to_string())
             .spawn()?
             .wait()?;
         if !status.success() {
             return Err(Error::ChildProcessFailure(image_name.to_string()));
         }
-        generated += 5000;
+        let base_path = output_path.join(format!("validator_keys_{idx}"));
+        for validator in read_dir(base_path.join("keys"))?.map_ok(|e| Validator {
+            base_path: base_path.clone(),
+            key: e.file_name(),
+        }) {
+            validators.push(validator?);
+        }
+        idx += 1;
     }
-    let mut path = output_path.join("validator_keys/keys");
-    let validators = read_dir(&path)?
-        .map_ok(|e| Validator { key: e.file_name() })
-        .try_collect()?;
-    path.pop();
-    Ok((path, validators))
+    Ok(validators)
 }
 
 pub struct Validator {
+    base_path: PathBuf,
     key: OsString,
 }
 
 impl Validator {
+    pub fn base_path(&self) -> &PathBuf {
+        &self.base_path
+    }
+
     pub fn key(&self) -> &OsString {
         &self.key
     }

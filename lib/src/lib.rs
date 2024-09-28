@@ -183,7 +183,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
             (0, 0, total) // maybe (1, 0) is preferable? :thinking:
         }
     };
-    let (validator_dir, validators) = validators::generate(
+    let validators = validators::generate(
         ethshadow_config
             .genesis
             .generator_image
@@ -195,7 +195,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
             .mnemonic
             .as_deref()
             .unwrap_or(genesis::DEFAULT_MNEMONIC),
-        total_val,
+        total_val as usize,
     )?;
     let mut val_idx = 0;
     let mut validators = |count: u64| {
@@ -208,7 +208,6 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
     let ctx = SimulationContext::new(
         rng,
         output_path.join("metadata"),
-        validator_dir,
         output_path.join("jwt/jwtsecret"),
     );
     let mut node_manager = NodeManager::new(

@@ -40,12 +40,10 @@ impl Client for LighthouseValidatorClient {
             create_dir(&dir)?;
         }
 
-        let secrets_src = ctx.validators_path().join("secrets");
         let secrets_dest = dir.join("secrets");
         if !secrets_dest.exists() {
             create_dir(&secrets_dest)?;
         }
-        let validators_src = ctx.validators_path().join("keys");
         let validators_dest = dir.join("validators");
         if !validators_dest.exists() {
             create_dir(&validators_dest)?;
@@ -53,8 +51,14 @@ impl Client for LighthouseValidatorClient {
 
         for validator in validators {
             let key = validator.key();
-            fs::rename(secrets_src.join(key), secrets_dest.join(key))?;
-            fs::rename(validators_src.join(key), validators_dest.join(key))?;
+            fs::rename(
+                validator.base_path().join("secrets").join(key),
+                secrets_dest.join(key),
+            )?;
+            fs::rename(
+                validator.base_path().join("keys").join(key),
+                validators_dest.join(key),
+            )?;
         }
 
         Ok(Process {
