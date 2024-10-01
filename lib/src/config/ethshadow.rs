@@ -159,7 +159,7 @@ impl EthShadowConfig {
         self.add_builtin_location(
             "australia",
             [
-                ("australia", 20, 0.0),
+                ("australia", 2, 0.0),
                 ("east_asia", 110, 0.0),
                 ("europe", 165, 0.0),
                 ("na_west", 110, 0.0),
@@ -173,7 +173,7 @@ impl EthShadowConfig {
             "east_asia",
             [
                 ("australia", 110, 0.0),
-                ("east_asia", 40, 0.0),
+                ("east_asia", 4, 0.0),
                 ("europe", 125, 0.0),
                 ("na_west", 100, 0.0),
                 ("na_east", 140, 0.0),
@@ -187,7 +187,7 @@ impl EthShadowConfig {
             [
                 ("australia", 165, 0.0),
                 ("east_asia", 125, 0.0),
-                ("europe", 20, 0.0),
+                ("europe", 2, 0.0),
                 ("na_west", 110, 0.0),
                 ("na_east", 70, 0.0),
                 ("south_america", 140, 0.0),
@@ -201,7 +201,7 @@ impl EthShadowConfig {
                 ("australia", 110, 0.0),
                 ("east_asia", 100, 0.0),
                 ("europe", 110, 0.0),
-                ("na_west", 20, 0.0),
+                ("na_west", 2, 0.0),
                 ("na_east", 60, 0.0),
                 ("south_america", 100, 0.0),
                 ("south_africa", 160, 0.0),
@@ -215,7 +215,7 @@ impl EthShadowConfig {
                 ("east_asia", 140, 0.0),
                 ("europe", 70, 0.0),
                 ("na_west", 60, 0.0),
-                ("na_east", 20, 0.0),
+                ("na_east", 2, 0.0),
                 ("south_america", 100, 0.0),
                 ("south_africa", 130, 0.0),
                 ("west_asia", 110, 0.0),
@@ -229,7 +229,7 @@ impl EthShadowConfig {
                 ("europe", 140, 0.0),
                 ("na_west", 100, 0.0),
                 ("na_east", 100, 0.0),
-                ("south_america", 70, 0.0),
+                ("south_america", 7, 0.0),
                 ("south_africa", 195, 0.0),
                 ("west_asia", 145, 0.0),
             ],
@@ -243,7 +243,7 @@ impl EthShadowConfig {
                 ("na_west", 160, 0.0),
                 ("na_east", 130, 0.0),
                 ("south_america", 190, 0.0),
-                ("south_africa", 220, 0.0),
+                ("south_africa", 7, 0.0),
                 ("west_asia", 110, 0.0),
             ],
         );
@@ -257,7 +257,7 @@ impl EthShadowConfig {
                 ("na_east", 110, 0.0),
                 ("south_america", 145, 0.0),
                 ("south_africa", 110, 0.0),
-                ("west_asia", 50, 0.0),
+                ("west_asia", 5, 0.0),
             ],
         );
         self.add_builtin_reliability(
