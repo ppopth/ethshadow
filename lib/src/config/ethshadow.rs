@@ -25,6 +25,7 @@ pub struct EthShadowConfig {
     pub validators: Option<u64>,
     pub clients: HashMap<CowStr, Box<dyn Client>>,
     pub genesis: Genesis,
+    pub topology: Topology,
     pub shadow_path: Option<String>,
 }
 
@@ -53,25 +54,6 @@ pub struct Node {
     pub count: NodeCount,
     #[serde(default)]
     pub tag: Option<String>,
-}
-
-pub fn default_client_stack() -> HashMap<String, OneOrMany<String>> {
-    [
-        ("el".into(), OneOrMany::One("reth".into())),
-        ("cl".into(), OneOrMany::One("lighthouse".into())),
-        ("vc".into(), OneOrMany::One("lighthouse_vc".into())),
-    ]
-    .into_iter()
-    .collect()
-}
-
-pub fn default_boot_clients() -> HashMap<String, OneOrMany<String>> {
-    [
-        ("el".into(), OneOrMany::One("geth_bootnode".into())),
-        ("cl".into(), OneOrMany::One("lighthouse_bootnode".into())),
-    ]
-    .into_iter()
-    .collect()
 }
 
 impl Node {
@@ -153,6 +135,38 @@ pub struct Genesis {
     pub data_column_sidecar_subnet_count: Option<u64>,
     pub max_blobs_per_block: Option<u64>,
     pub premine: Option<HashMap<String, String>>,
+}
+
+#[derive(Default, Deserialize, Clone, Debug)]
+pub enum Topology {
+    #[default]
+    Simple,
+    Clustered(Vec<Cluster>),
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct Cluster {
+    pub gateway_latency: u64,
+    pub cluster_latencies: Vec<u64>,
+}
+
+pub fn default_client_stack() -> HashMap<String, OneOrMany<String>> {
+    [
+        ("el".into(), OneOrMany::One("reth".into())),
+        ("cl".into(), OneOrMany::One("lighthouse".into())),
+        ("vc".into(), OneOrMany::One("lighthouse_vc".into())),
+    ]
+        .into_iter()
+        .collect()
+}
+
+pub fn default_boot_clients() -> HashMap<String, OneOrMany<String>> {
+    [
+        ("el".into(), OneOrMany::One("geth_bootnode".into())),
+        ("cl".into(), OneOrMany::One("lighthouse_bootnode".into())),
+    ]
+        .into_iter()
+        .collect()
 }
 
 impl EthShadowConfig {

@@ -5,8 +5,8 @@ use crate::config::ethshadow::{
 use crate::config::one_or_many::OneOrMany;
 use crate::config::FullConfig;
 use crate::error::Error;
-use crate::error::Error::{LeftoverValidators, MoreValidatorsRequested};
-use crate::network_graph::generate_network_graph;
+use crate::error::Error::MoreValidatorsRequested;
+use crate::network_graph::{generate_network_graph, GeneratedNetworkGraph};
 use crate::node::{NodeManager, SimulationContext};
 use itertools::Itertools;
 use rand::prelude::*;
@@ -84,23 +84,18 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
     )?;
 
     // generate network graph
-    let network_graph = generate_network_graph(&ethshadow_config)?;
-    shadow_config.set_network(network_graph.gml, false)?;
+    let GeneratedNetworkGraph {
+        gml,
+        mut network_graph,
+    } = generate_network_graph(&ethshadow_config)?;
+    shadow_config.set_network(gml, false)?;
 
     // postprocessing given shadow config values: overwrite string network ids
     for host in shadow_config.hosts_mut()? {
         if let Some(node_id) = host?.network_node_id_mut() {
             if let Some((location, reliability)) = node_id.as_str().and_then(|s| s.split_once("-"))
             {
-                let node = network_graph
-                    .nodes
-                    .get(&(location, reliability))
-                    .ok_or_else(|| {
-                        Error::UnknownLocationReliability(
-                            location.to_string(),
-                            reliability.to_string(),
-                        )
-                    })?;
+                let node = network_graph.assign_network_node(location, reliability)?;
                 *node_id = Value::Number(node.id().into());
             } else {
                 return Err(Error::ExpectedOtherType("network_node_id".to_string()));
@@ -157,9 +152,8 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
             };
             if anys != 0 {
                 (remaining / anys, remaining % anys, validators)
-            } else if remaining != 0 {
-                return Err(LeftoverValidators);
             } else {
+                // todo log a warning when remaining != 0
                 (0, 0, validators)
             }
         }
@@ -214,7 +208,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
         ctx,
         output_path.clone(),
         &mut shadow_config,
-        network_graph.nodes,
+        network_graph,
     );
     let mut encountered_anys = 0;
     for node in nodes {

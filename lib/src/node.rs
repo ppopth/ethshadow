@@ -2,11 +2,11 @@ use crate::clients::Client;
 use crate::config::shadow::Host;
 use crate::config::ShadowConfig;
 use crate::error::Error;
-use crate::gml::NetworkNode;
+use crate::network_graph::NetworkGraph;
 use crate::validators::Validator;
 use rand::prelude::StdRng;
 use rand::Rng;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use std::fs::{create_dir, File};
 use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
@@ -15,7 +15,7 @@ pub struct NodeManager<'c, 'n> {
     ctx: SimulationContext<'n>,
     base_dir: PathBuf,
     shadow_config: &'c mut ShadowConfig,
-    network_nodes: BTreeMap<(&'n str, &'n str), NetworkNode>,
+    network_nodes: Box<dyn NetworkGraph + 'n>,
     used_ips: HashSet<Ipv4Addr>,
 }
 
@@ -31,7 +31,7 @@ impl<'c, 'n> NodeManager<'c, 'n> {
         ctx: SimulationContext<'n>,
         base_dir: PathBuf,
         shadow_config: &'c mut ShadowConfig,
-        network_nodes: BTreeMap<(&'n str, &'n str), NetworkNode>,
+        network_nodes: Box<dyn NetworkGraph + 'n>,
     ) -> Self {
         Self {
             ctx,
@@ -46,8 +46,8 @@ impl<'c, 'n> NodeManager<'c, 'n> {
         &mut self,
         tag: &str,
         clients: &[(&dyn Client, &[Validator])],
-        location_name: &'n str,
-        reliability_name: &'n str,
+        location: &'n str,
+        reliability: &'n str,
     ) -> Result<(), Error> {
         let idx = self.used_ips.len();
         let name = format!("node{idx}{tag}");
@@ -55,8 +55,8 @@ impl<'c, 'n> NodeManager<'c, 'n> {
         let dir = self.base_dir.join(&name);
         create_dir(&dir)?;
 
-        File::create_new(dir.join(location_name))?;
-        File::create_new(dir.join(reliability_name))?;
+        File::create_new(dir.join(location))?;
+        File::create_new(dir.join(reliability))?;
 
         let mut ip = random_ip(self.ctx.rng());
         while !self.used_ips.insert(ip) {
@@ -66,21 +66,15 @@ impl<'c, 'n> NodeManager<'c, 'n> {
         let node = Node {
             ip,
             dir,
-            location: location_name,
-            reliability: reliability_name,
+            location,
+            reliability,
         };
 
         let mut host = Host {
             ip_addr: ip.to_string(),
             network_node_id: self
                 .network_nodes
-                .get(&(location_name, reliability_name))
-                .ok_or_else(|| {
-                    Error::UnknownLocationReliability(
-                        location_name.to_string(),
-                        reliability_name.to_string(),
-                    )
-                })?
+                .assign_network_node(location, reliability)?
                 .id(),
             processes: vec![],
         };

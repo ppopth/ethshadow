@@ -1,4 +1,5 @@
-/data*
-/target
+data
+data*
+target
 .idea
 *.swp
