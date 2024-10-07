@@ -9,6 +9,7 @@ const JSON_RPC_PORT: &str = "22001";
 const BEACON_API_PORT: &str = "31001";
 const CL_PROMETHEUS_PORT: &str = "32001";
 
+pub mod geth;
 pub mod geth_bootnode;
 pub mod lighthouse;
 pub mod lighthouse_bootnode;

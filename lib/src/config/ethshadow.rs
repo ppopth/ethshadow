@@ -1,3 +1,4 @@
+use crate::clients::geth::Geth;
 use crate::clients::geth_bootnode::GethBootnode;
 use crate::clients::lighthouse::Lighthouse;
 use crate::clients::lighthouse_bootnode::LighthouseBootnode;
@@ -307,6 +308,7 @@ impl EthShadowConfig {
         );
         self.add_builtin_client("geth_bootnode", GethBootnode::default());
         self.add_builtin_client("lighthouse_bootnode", LighthouseBootnode::default());
+        self.add_builtin_client("geth", Geth::default());
         self.add_builtin_client("reth", Reth::default());
         self.add_builtin_client("lighthouse", Lighthouse::default());
         self.add_builtin_client("lighthouse_vc", LighthouseValidatorClient::default());
