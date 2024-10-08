@@ -24,9 +24,6 @@ pub enum ValidatorDemand {
     /// We want validators, but the user does not care about the amount. If we can't get any,
     /// the validator slice will be empty.
     Any,
-    /// We want validators, but the user does not care about the amount. If we can't get any,
-    /// the client will NOT be added to the node.
-    AnyNonZero,
     /// We want validators, and the slice will have exactly this amount of elements. Generation
     /// fails if we can not satisfy this.
     Count(u64),

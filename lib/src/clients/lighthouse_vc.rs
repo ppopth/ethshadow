@@ -80,7 +80,7 @@ impl Client for LighthouseValidatorClient {
 
     fn validator_demand(&self) -> ValidatorDemand {
         match self.validators {
-            None => ValidatorDemand::AnyNonZero,
+            None => ValidatorDemand::Any,
             Some(num) => ValidatorDemand::Count(num),
         }
     }

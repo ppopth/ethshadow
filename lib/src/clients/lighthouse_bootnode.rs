@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::read_to_string;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use serde::Deserialize;
 
@@ -51,6 +51,7 @@ impl Client for LighthouseBootnode {
             .arg(genesis::GENESIS_FORK_VERSION)
             .arg("--output-dir")
             .arg(&dir)
+            .stdout(Stdio::null())
             .spawn()?
             .wait()?;
         if !status.success() {

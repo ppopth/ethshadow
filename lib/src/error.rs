@@ -24,15 +24,17 @@ pub enum Error {
                 ethereum.locations and ethereum.reliabilities instead"
     )]
     ExistingNetwork,
-    #[error("Unknown location \"{0}\" or reliability \"{0}\"")]
-    UnknownLocationReliability(String, String),
+    #[error("Unknown location \"{0}\"")]
+    UnknownLocation(String),
+    #[error("Unknown reliability \"{0}\"")]
+    UnknownReliability(String),
     #[error("Unknown client \"{0}\"")]
     UnknownClient(String),
     #[error("You have specified {0} total validators, but VCs have requested {1}")]
     MoreValidatorsRequested(u64, u64),
     #[error(
         "You have configured all validator clients to take a specific number of validators \
-                and it disagrees with the configured total number of validators"
+            and it disagrees with the configured total number of validators"
     )]
     LeftoverValidators,
     #[error(
@@ -42,4 +44,11 @@ pub enum Error {
     InconsistentCount(u64, u64),
     #[error("Missing env var: {0}")]
     MissingEnvVar(#[from] VarError),
+    #[error("Output data folder already exists")]
+    OutputFolderExists,
+    #[error(
+        "You must specify a global validator count and/or a validator count for each \
+            validator client"
+    )]
+    MissingValidatorCount,
 }

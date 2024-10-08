@@ -3,9 +3,8 @@ use crate::config::shadow::Host;
 use crate::config::ShadowConfig;
 use crate::error::Error;
 use crate::network_graph::NetworkGraph;
-use crate::validators::Validator;
-use rand::prelude::StdRng;
-use rand::Rng;
+use crate::validators::ValidatorManager;
+use rand::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::fs::{create_dir, File};
 use std::net::Ipv4Addr;
@@ -16,6 +15,7 @@ pub struct NodeManager<'c, 'n> {
     base_dir: PathBuf,
     shadow_config: &'c mut ShadowConfig,
     network_nodes: Box<dyn NetworkGraph + 'n>,
+    validator_manager: ValidatorManager,
     used_ips: HashSet<Ipv4Addr>,
 }
 
@@ -28,16 +28,23 @@ pub struct Node<'a> {
 
 impl<'c, 'n> NodeManager<'c, 'n> {
     pub fn new(
-        ctx: SimulationContext<'n>,
         base_dir: PathBuf,
         shadow_config: &'c mut ShadowConfig,
         network_nodes: Box<dyn NetworkGraph + 'n>,
+        validator_manager: ValidatorManager,
     ) -> Self {
+        let rng = StdRng::seed_from_u64(shadow_config.seed());
+        let ctx = SimulationContext::new(
+            rng,
+            base_dir.join("metadata"),
+            base_dir.join("jwt/jwtsecret"),
+        );
         Self {
             ctx,
             base_dir,
             shadow_config,
             network_nodes,
+            validator_manager,
             used_ips: HashSet::new(),
         }
     }
@@ -45,7 +52,7 @@ impl<'c, 'n> NodeManager<'c, 'n> {
     pub fn gen_node(
         &mut self,
         tag: &str,
-        clients: &[(&dyn Client, &[Validator])],
+        clients: &[&dyn Client],
         location: &'n str,
         reliability: &'n str,
     ) -> Result<(), Error> {
@@ -79,8 +86,9 @@ impl<'c, 'n> NodeManager<'c, 'n> {
             processes: vec![],
         };
 
-        for client in clients {
-            let process = client.0.add_to_node(&node, &mut self.ctx, client.1)?;
+        for &client in clients {
+            let validators = self.validator_manager.assign(client);
+            let process = client.add_to_node(&node, &mut self.ctx, validators)?;
             host.processes.push(process);
         }
 

@@ -1,7 +1,6 @@
 use crate::config::ethshadow::Topology;
 use crate::config::EthShadowConfig;
 use crate::error::Error;
-use crate::error::Error::UnknownLocationReliability;
 use crate::gml::{Gml, NetworkNode};
 use std::collections::BTreeMap;
 
@@ -100,20 +99,21 @@ impl SimpleNetworkGraph<'_> {
     }
 
     fn get_network_node(&self, location: &str, reliability: &str) -> Result<NetworkNode, Error> {
-        Ok(*self.nodes
+        Ok(*self
+            .nodes
             .get(location)
-            .ok_or_else(|| {
-                UnknownLocationReliability(location.to_string(), reliability.to_string())
-            })?
+            .ok_or_else(|| Error::UnknownLocation(location.to_string()))?
             .get(reliability)
-            .ok_or_else(|| {
-                UnknownLocationReliability(location.to_string(), reliability.to_string())
-            })?)
+            .ok_or_else(|| Error::UnknownReliability(reliability.to_string()))?)
     }
 }
 
 impl NetworkGraph for SimpleNetworkGraph<'_> {
-    fn assign_network_node(&mut self, location: &str, reliability: &str) -> Result<NetworkNode, Error> {
+    fn assign_network_node(
+        &mut self,
+        location: &str,
+        reliability: &str,
+    ) -> Result<NetworkNode, Error> {
         self.get_network_node(location, reliability)
     }
 }

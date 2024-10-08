@@ -83,4 +83,8 @@ impl<T> OneOrMany<T> {
             OneOrMany::Many(vec) => vec.len(),
         }
     }
+
+    pub(crate) fn iter(&self) -> OneOrManyIterRef<T> {
+        self.into_iter()
+    }
 }

@@ -1,13 +1,109 @@
+use crate::clients::{Client, ValidatorDemand};
+use crate::config::ethshadow::{Node, DEFAULT_GENESIS_GEN_IMAGE, DEFAULT_MNEMONIC};
+use crate::config::EthShadowConfig;
 use crate::error::Error;
 use itertools::Itertools;
 use std::cmp::min;
 use std::ffi::OsString;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 use users::get_current_uid;
 
-pub fn generate(
+pub struct ValidatorManager {
+    validators: Vec<Validator>,
+    val_for_each_any: usize,
+    remainder: usize,
+    already_assigned: usize,
+}
+impl ValidatorManager {
+    pub fn new(
+        config: &EthShadowConfig,
+        nodes: &[Node],
+        output_path: &Path,
+    ) -> Result<ValidatorManager, Error> {
+        let validator_count;
+        let mut val_for_each_any = 0;
+        let mut remainder = 0;
+
+        let mut requested = 0;
+        let mut anys = 0;
+        for node in nodes {
+            let count = node.count;
+            for client in &node.clients {
+                match client.validator_demand() {
+                    ValidatorDemand::Count(val_count) => requested += val_count * count,
+                    ValidatorDemand::Any => anys += count,
+                    ValidatorDemand::None => {}
+                }
+            }
+        }
+
+        match config.validators {
+            Some(validators) => {
+                let Some(remaining) = validators.checked_sub(requested) else {
+                    return Err(Error::MoreValidatorsRequested(validators, requested));
+                };
+                validator_count = validators;
+                if anys != 0 {
+                    val_for_each_any = validators / anys;
+                    remainder = remaining % anys;
+                } else if remaining != 0 {
+                    return Err(Error::LeftoverValidators);
+                }
+            }
+            None => {
+                if anys != 0 {
+                    return Err(Error::MissingValidatorCount);
+                }
+                validator_count = requested;
+            }
+        };
+
+        let validators = generate(
+            config
+                .genesis
+                .generator_image
+                .as_deref()
+                .unwrap_or(DEFAULT_GENESIS_GEN_IMAGE),
+            output_path,
+            config
+                .genesis
+                .mnemonic
+                .as_deref()
+                .unwrap_or(DEFAULT_MNEMONIC),
+            validator_count as usize,
+        )?;
+
+        Ok(ValidatorManager {
+            validators,
+            val_for_each_any: val_for_each_any as usize,
+            remainder: remainder as usize,
+            already_assigned: 0,
+        })
+    }
+
+    pub fn assign(&mut self, client: &dyn Client) -> &[Validator] {
+        let count = match client.validator_demand() {
+            ValidatorDemand::None => 0,
+            ValidatorDemand::Any => {
+                if self.remainder > 0 {
+                    self.remainder -= 1;
+                    self.val_for_each_any + 1
+                } else {
+                    self.val_for_each_any
+                }
+            }
+            ValidatorDemand::Count(count) => count as usize,
+        };
+        let start = self.already_assigned;
+        let end = start + count;
+        self.already_assigned = end;
+        &self.validators[start..end]
+    }
+}
+
+fn generate(
     image_name: &str,
     output_path: &Path,
     mnemonic: &str,
@@ -35,6 +131,7 @@ pub fn generate(
             .arg(validators.len().to_string())
             .arg("--source-max")
             .arg(min(validators.len() + 4000, total_val).to_string())
+            .stdout(Stdio::null())
             .spawn()?
             .wait()?;
         if !status.success() {

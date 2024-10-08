@@ -10,7 +10,8 @@ use crate::config::one_or_many::OneOrMany;
 use crate::error::Error;
 use crate::CowStr;
 use humantime_serde::Serde as HumanReadable;
-use serde::Deserialize;
+use itertools::Itertools;
+use serde::{Deserialize, Deserializer};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::Duration;
@@ -19,7 +20,8 @@ use std::time::Duration;
 #[derive(Deserialize, Debug, Default)]
 #[serde(default)]
 pub struct EthShadowConfig {
-    pub nodes: NodeConfig,
+    #[serde(deserialize_with = "deserialize_nodes")]
+    pub nodes: Vec<SugaredNode>,
     pub locations: HashMap<CowStr, Location>,
     pub reliabilities: HashMap<CowStr, Reliability>,
     pub validators: Option<u64>,
@@ -33,7 +35,7 @@ pub struct EthShadowConfig {
 #[serde(untagged)]
 pub enum NodeConfig {
     Simple(u64),
-    Detailed(Vec<Node>),
+    Detailed(Vec<SugaredNode>),
 }
 
 impl Default for NodeConfig {
@@ -42,8 +44,30 @@ impl Default for NodeConfig {
     }
 }
 
+fn deserialize_nodes<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<SugaredNode>, D::Error> {
+    Ok(match NodeConfig::deserialize(d)? {
+        NodeConfig::Simple(count) => vec![
+            SugaredNode {
+                locations: OneOrMany::One("europe".into()),
+                reliabilities: OneOrMany::One("reliable".into()),
+                clients: default_boot_clients(),
+                count: NodeCount::TotalCount(1),
+                tag: Some("boot".into()),
+            },
+            SugaredNode {
+                locations: OneOrMany::One("europe".into()),
+                reliabilities: OneOrMany::One("reliable".into()),
+                clients: default_client_stack(),
+                count: NodeCount::TotalCount(count),
+                tag: None,
+            },
+        ],
+        NodeConfig::Detailed(vec) => vec,
+    })
+}
+
 #[derive(Deserialize, Clone, Debug)]
-pub struct Node {
+pub struct SugaredNode {
     #[serde(alias = "location")]
     pub locations: OneOrMany<String>,
     #[serde(alias = "reliability")]
@@ -56,20 +80,7 @@ pub struct Node {
     pub tag: Option<String>,
 }
 
-impl Node {
-    pub fn count(&self) -> Result<u64, Error> {
-        match self.count {
-            NodeCount::CountPerCombination(count) => Ok(count * self.combinations()),
-            NodeCount::TotalCount(count) => {
-                if count % self.combinations() == 0 {
-                    Ok(count)
-                } else {
-                    Err(Error::InconsistentCount(count, self.combinations()))
-                }
-            }
-        }
-    }
-
+impl SugaredNode {
     pub fn combinations(&self) -> u64 {
         self.locations.len() as u64
             * self.reliabilities.len() as u64
@@ -78,6 +89,19 @@ impl Node {
                 .values()
                 .map(|clients| clients.len())
                 .product::<usize>() as u64
+    }
+
+    pub fn count_per_combination(&self) -> Result<u64, Error> {
+        match self.count {
+            NodeCount::CountPerCombination(count) => Ok(count),
+            NodeCount::TotalCount(count) => {
+                if count % self.combinations() == 0 {
+                    Ok(count / self.combinations())
+                } else {
+                    Err(Error::InconsistentCount(count, self.combinations()))
+                }
+            }
+        }
     }
 }
 
@@ -156,8 +180,8 @@ pub fn default_client_stack() -> HashMap<String, OneOrMany<String>> {
         ("cl".into(), OneOrMany::One("lighthouse".into())),
         ("vc".into(), OneOrMany::One("lighthouse_vc".into())),
     ]
-        .into_iter()
-        .collect()
+    .into_iter()
+    .collect()
 }
 
 pub fn default_boot_clients() -> HashMap<String, OneOrMany<String>> {
@@ -165,8 +189,8 @@ pub fn default_boot_clients() -> HashMap<String, OneOrMany<String>> {
         ("el".into(), OneOrMany::One("geth_bootnode".into())),
         ("cl".into(), OneOrMany::One("lighthouse_bootnode".into())),
     ]
-        .into_iter()
-        .collect()
+    .into_iter()
+    .collect()
 }
 
 impl EthShadowConfig {
@@ -351,4 +375,63 @@ impl EthShadowConfig {
     fn add_builtin_client<C: Client + 'static>(&mut self, name: &'static str, client: C) {
         self.clients.entry(name.into()).or_insert(Box::new(client));
     }
+
+    pub fn desugar_nodes(&self) -> Result<Vec<Node>, Error> {
+        let mut result = vec![];
+
+        for node in &self.nodes {
+            let clients: Vec<Vec<_>> = node
+                .clients
+                .values()
+                .map(|clients| {
+                    clients
+                        .iter()
+                        .map(|client| {
+                            self.clients
+                                .get(client.as_str())
+                                .map(|b| b.as_ref())
+                                .ok_or_else(|| Error::UnknownClient(client.clone()))
+                        })
+                        .try_collect()
+                })
+                .try_collect()?;
+            for location in &node.locations {
+                for reliability in &node.reliabilities {
+                    for clients in clients
+                        .iter()
+                        .map(|vec| vec.iter().copied())
+                        .multi_cartesian_product()
+                    {
+                        result.push(Node {
+                            location,
+                            reliability,
+                            clients,
+                            count: node.count_per_combination()?,
+                            tag: node.tag.as_deref(),
+                        });
+                    }
+                }
+            }
+        }
+
+        Ok(result)
+    }
 }
+
+#[derive(Clone, Debug)]
+pub struct Node<'a> {
+    pub location: &'a str,
+    pub reliability: &'a str,
+    pub clients: Vec<&'a dyn Client>,
+    pub count: u64,
+    pub tag: Option<&'a str>,
+}
+
+pub const DEFAULT_GENESIS_GEN_IMAGE: &str = "ethpandaops/ethereum-genesis-generator:3.3.7";
+pub const DEFAULT_MNEMONIC: &str = "\
+iron oxygen will win \
+iron oxygen will win \
+iron oxygen will win \
+iron oxygen will win \
+iron oxygen will win \
+iron oxygen will toe";

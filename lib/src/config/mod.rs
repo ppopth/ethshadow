@@ -7,13 +7,12 @@ use std::sync::Arc;
 
 use serde_yaml::{Mapping, Value};
 
+use crate::error::Error;
 pub use ethshadow::EthShadowConfig;
 pub use shadow::ShadowConfig;
 
-use crate::error::Error;
-
 pub mod ethshadow;
-pub mod one_or_many;
+mod one_or_many;
 pub mod shadow;
 
 pub struct FullConfig {

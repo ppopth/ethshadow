@@ -1,3 +1,4 @@
+use crate::config::ethshadow::DEFAULT_MNEMONIC;
 use crate::config::EthShadowConfig;
 use crate::error::Error;
 use std::ffi::OsString;
@@ -5,16 +6,8 @@ use std::fmt::Display;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use users::get_current_uid;
-
-pub const DEFAULT_MNEMONIC: &str = "\
-iron oxygen will win \
-iron oxygen will win \
-iron oxygen will win \
-iron oxygen will win \
-iron oxygen will win \
-iron oxygen will toe";
 
 pub const GENESIS_FORK_VERSION: &str = "0x10000000";
 
@@ -167,7 +160,7 @@ pub fn generate(image_name: &str, output_path: OsString) -> Result<(), Error> {
         .arg(config_mount)
         .arg(image_name)
         .arg("all")
-        //.stdout(Stdio::null())
+        .stdout(Stdio::null())
         .spawn()?
         .wait()?;
     if status.success() {

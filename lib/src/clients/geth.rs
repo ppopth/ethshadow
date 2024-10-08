@@ -7,7 +7,7 @@ use crate::validators::Validator;
 use crate::CowStr;
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 const PORT: &str = "21000";
 
@@ -44,6 +44,7 @@ impl Client for Geth {
             .arg("--datadir")
             .arg(dir)
             .arg(genesis_file)
+            .stdout(Stdio::null())
             .spawn()?
             .wait()?;
         if !status.success() {

@@ -5,15 +5,6 @@ use serde_yaml::mapping::IterMut;
 use serde_yaml::{to_value, Mapping, Value};
 use std::collections::HashMap;
 
-macro_rules! get_as {
-    ($map:expr, $string:literal, $accessor:ident) => {
-        $map.get($string).map(|v| {
-            v.$accessor()
-                .ok_or_else(|| Error::ExpectedOtherType($string.to_string()))
-        })
-    };
-}
-
 /// A light wrapper around a yaml mapping representing the root of a shadow config with some useful
 /// setters and getters
 ///
@@ -39,14 +30,13 @@ pub struct Process {
 }
 
 impl ShadowConfig {
-    fn general(&self) -> Result<Option<&Mapping>, Error> {
-        get_as!(self.0, "general", as_mapping).transpose()
-    }
-
-    pub fn seed(&self) -> Result<u64, Error> {
-        self.general()?
-            .and_then(|g| get_as!(g, "seed", as_u64))
-            .unwrap_or(Ok(1))
+    pub fn seed(&self) -> u64 {
+        self.0
+            .get("general")
+            .and_then(Value::as_mapping)
+            .and_then(|m| m.get("seed"))
+            .and_then(Value::as_u64)
+            .unwrap_or(1)
     }
 
     pub fn add_host(&mut self, hostname: String, host: &Host) -> Result<(), Error> {
