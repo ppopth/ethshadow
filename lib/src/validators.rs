@@ -46,7 +46,7 @@ impl ValidatorManager {
                 };
                 validator_count = validators;
                 if anys != 0 {
-                    val_for_each_any = validators / anys;
+                    val_for_each_any = remaining / anys;
                     remainder = remaining % anys;
                 } else if remaining != 0 {
                     return Err(Error::LeftoverValidators);
