@@ -9,17 +9,19 @@ use std::collections::{HashMap, HashSet};
 use std::fs::{create_dir, File};
 use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
+use crate::config::ethshadow::Node;
 
 pub struct NodeManager<'c, 'n> {
     ctx: SimulationContext<'n>,
     base_dir: PathBuf,
+    nodes: &'n [Node<'n>],
     shadow_config: &'c mut ShadowConfig,
     network_nodes: Box<dyn NetworkGraph + 'n>,
     validator_manager: ValidatorManager,
     used_ips: HashSet<Ipv4Addr>,
 }
 
-pub struct Node<'a> {
+pub struct NodeInfo<'a> {
     ip: Ipv4Addr,
     dir: PathBuf,
     location: &'a str,
@@ -29,19 +31,35 @@ pub struct Node<'a> {
 impl<'c, 'n> NodeManager<'c, 'n> {
     pub fn new(
         base_dir: PathBuf,
+        nodes: &'n [Node<'n>],
         shadow_config: &'c mut ShadowConfig,
         network_nodes: Box<dyn NetworkGraph + 'n>,
         validator_manager: ValidatorManager,
     ) -> Self {
+        let mut num_el_clients = 0;
+        let mut num_cl_clients = 0;
+        for node in nodes {
+            for client in &node.clients {
+                if client.is_el_client() {
+                    num_el_clients += node.count;
+                }
+                if client.is_cl_client() {
+                    num_cl_clients += node.count;
+                }
+            }
+        }
         let rng = StdRng::seed_from_u64(shadow_config.seed());
         let ctx = SimulationContext::new(
             rng,
             base_dir.join("metadata"),
             base_dir.join("jwt/jwtsecret"),
+            num_el_clients as usize,
+            num_cl_clients as usize,
         );
         Self {
             ctx,
             base_dir,
+            nodes,
             shadow_config,
             network_nodes,
             validator_manager,
@@ -49,7 +67,7 @@ impl<'c, 'n> NodeManager<'c, 'n> {
         }
     }
 
-    pub fn gen_node(
+    fn gen_node(
         &mut self,
         tag: &str,
         clients: &[&dyn Client],
@@ -70,7 +88,7 @@ impl<'c, 'n> NodeManager<'c, 'n> {
             ip = random_ip(self.ctx.rng());
         }
 
-        let node = Node {
+        let node = NodeInfo {
             ip,
             dir,
             location,
@@ -96,9 +114,23 @@ impl<'c, 'n> NodeManager<'c, 'n> {
 
         Ok(())
     }
+
+    pub fn generate_nodes(&mut self) -> Result<(), Error> {
+        for node in self.nodes {
+            for _ in 0..node.count {
+                self.gen_node(
+                    node.tag.unwrap_or(""),
+                    &node.clients,
+                    node.location,
+                    node.reliability,
+                )?;
+            }
+        }
+        Ok(())
+    }
 }
 
-impl<'a> Node<'a> {
+impl<'a> NodeInfo<'a> {
     pub fn ip(&self) -> Ipv4Addr {
         self.ip
     }
@@ -139,19 +171,23 @@ pub struct SimulationContext<'a> {
     el_http_endpoints: Vec<String>,
     cl_http_endpoints: Vec<String>,
     cl_monitoring_endpoints: HashMap<(&'a str, &'a str), Vec<String>>,
+    num_el_clients: usize,
+    num_cl_clients: usize,
 }
 
 impl<'a> SimulationContext<'a> {
-    pub fn new(rng: StdRng, metadata_path: PathBuf, jwt_path: PathBuf) -> Self {
+    pub fn new(rng: StdRng, metadata_path: PathBuf, jwt_path: PathBuf, num_el_clients: usize, num_cl_clients: usize) -> Self {
         Self {
             rng,
             metadata_path,
             jwt_path,
             el_bootnode_enodes: vec![],
             cl_bootnode_enrs: vec![],
-            el_http_endpoints: vec![],
-            cl_http_endpoints: vec![],
-            cl_monitoring_endpoints: HashMap::new(),
+            el_http_endpoints: Vec::with_capacity(num_el_clients),
+            cl_http_endpoints: Vec::with_capacity(num_cl_clients),
+            cl_monitoring_endpoints: HashMap::with_capacity(num_cl_clients),
+            num_el_clients,
+            num_cl_clients,
         }
     }
 
@@ -213,5 +249,13 @@ impl<'a> SimulationContext<'a> {
             .entry((location, reliability))
             .or_default()
             .push(endpoint);
+    }
+
+    pub fn num_el_clients(&self) -> usize {
+        self.num_el_clients
+    }
+
+    pub fn num_cl_clients(&self) -> usize {
+        self.num_cl_clients
     }
 }

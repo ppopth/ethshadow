@@ -1,7 +1,7 @@
 use crate::clients::Client;
 use crate::config::shadow::Process;
 use crate::error::Error;
-use crate::node::{Node, SimulationContext};
+use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
 use crate::CowStr;
 use serde::{Deserialize, Serialize};
@@ -45,7 +45,7 @@ struct StaticConfig<'a> {
 impl Client for Prometheus {
     fn add_to_node(
         &self,
-        node: &Node,
+        node: &NodeInfo,
         ctx: &mut SimulationContext,
         _validators: &[Validator],
     ) -> Result<Process, Error> {

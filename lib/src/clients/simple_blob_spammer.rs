@@ -1,7 +1,7 @@
 use crate::clients::Client;
 use crate::config::shadow::Process;
 use crate::error::Error;
-use crate::node::{Node, SimulationContext};
+use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -19,7 +19,7 @@ pub struct SimpleBlobSpammer {
 impl Client for SimpleBlobSpammer {
     fn add_to_node(
         &self,
-        _node: &Node,
+        _node: &NodeInfo,
         ctx: &mut SimulationContext,
         _validators: &[Validator],
     ) -> Result<Process, Error> {

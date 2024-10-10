@@ -2,7 +2,7 @@ use crate::clients::ENGINE_API_PORT;
 use crate::clients::{Client, JSON_RPC_PORT};
 use crate::config::shadow::Process;
 use crate::error::Error;
-use crate::node::{Node, SimulationContext};
+use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
 use crate::CowStr;
 use serde::Deserialize;
@@ -28,7 +28,7 @@ impl Default for Reth {
 impl Client for Reth {
     fn add_to_node(
         &self,
-        node: &Node,
+        node: &NodeInfo,
         ctx: &mut SimulationContext,
         _validators: &[Validator],
     ) -> Result<Process, Error> {
@@ -66,4 +66,6 @@ impl Client for Reth {
             start_time: "5s".into(),
         })
     }
+
+    fn is_el_client(&self) -> bool { true }
 }

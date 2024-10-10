@@ -7,7 +7,7 @@ use serde::Deserialize;
 use crate::clients::{Client, Validator};
 use crate::config::shadow::Process;
 use crate::error::Error;
-use crate::node::{Node, SimulationContext};
+use crate::node::{NodeInfo, SimulationContext};
 use crate::{genesis, CowStr};
 
 const PORT: &str = "4011";
@@ -32,7 +32,7 @@ impl Default for LighthouseBootnode {
 impl Client for LighthouseBootnode {
     fn add_to_node(
         &self,
-        node: &Node,
+        node: &NodeInfo,
         ctx: &mut SimulationContext,
         _validators: &[Validator],
     ) -> Result<Process, Error> {

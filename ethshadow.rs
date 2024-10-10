@@ -6,13 +6,13 @@
 //! ```
 
 use clap::{arg, command, value_parser};
+use color_eyre::eyre::WrapErr;
 use color_eyre::Result;
 use ethshadow::generate;
 use std::env;
 use std::fs::File;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
-use color_eyre::eyre::WrapErr;
 
 fn main() -> Result<()> {
     let mut matches = command!() // requires `cargo` feature

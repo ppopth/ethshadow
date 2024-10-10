@@ -107,20 +107,12 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
 
     let mut node_manager = NodeManager::new(
         output_path.clone(),
+        &nodes,
         &mut shadow_config,
         network_graph,
         validators,
     );
-    for node in nodes {
-        for _ in 0..node.count {
-            node_manager.gen_node(
-                node.tag.unwrap_or(""),
-                &node.clients,
-                node.location,
-                node.reliability,
-            )?;
-        }
-    }
+    node_manager.generate_nodes()?;
 
     // write modified shadow.yaml to disk
     output_path.push("shadow.yaml");

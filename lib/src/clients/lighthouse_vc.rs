@@ -2,7 +2,7 @@ use crate::clients::BEACON_API_PORT;
 use crate::clients::{Client, ValidatorDemand};
 use crate::config::shadow::Process;
 use crate::error::Error;
-use crate::node::{Node, SimulationContext};
+use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
 use crate::CowStr;
 use serde::Deserialize;
@@ -30,7 +30,7 @@ impl Default for LighthouseValidatorClient {
 impl Client for LighthouseValidatorClient {
     fn add_to_node(
         &self,
-        node: &Node,
+        node: &NodeInfo,
         ctx: &mut SimulationContext,
         validators: &[Validator],
     ) -> Result<Process, Error> {

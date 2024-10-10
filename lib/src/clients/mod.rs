@@ -1,6 +1,6 @@
 use crate::config::shadow::Process;
 use crate::error::Error;
-use crate::node::{Node, SimulationContext};
+use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
 use std::fmt::Debug;
 
@@ -33,7 +33,7 @@ pub enum ValidatorDemand {
 pub trait Client: Debug {
     fn add_to_node<'a>(
         &self,
-        node: &Node<'a>,
+        node: &NodeInfo<'a>,
         ctx: &mut SimulationContext<'a>,
         validators: &[Validator],
     ) -> Result<Process, Error>;
@@ -41,4 +41,7 @@ pub trait Client: Debug {
     fn validator_demand(&self) -> ValidatorDemand {
         ValidatorDemand::None
     }
+
+    fn is_cl_client(&self) -> bool { false }
+    fn is_el_client(&self) -> bool { false }
 }

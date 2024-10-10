@@ -2,7 +2,7 @@ use crate::clients::Client;
 use crate::clients::{BEACON_API_PORT, CL_PROMETHEUS_PORT, ENGINE_API_PORT};
 use crate::config::shadow::Process;
 use crate::error::Error;
-use crate::node::{Node, SimulationContext};
+use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
 use crate::CowStr;
 use serde::Deserialize;
@@ -15,6 +15,7 @@ const PORT: &str = "31000";
 pub struct Lighthouse {
     pub executable: CowStr,
     pub extra_args: String,
+    pub lower_target_peers: bool,
 }
 
 impl Default for Lighthouse {
@@ -22,6 +23,7 @@ impl Default for Lighthouse {
         Self {
             executable: "lighthouse".into(),
             extra_args: "".into(),
+            lower_target_peers: true,
         }
     }
 }
@@ -30,7 +32,7 @@ impl Default for Lighthouse {
 impl Client for Lighthouse {
     fn add_to_node<'a>(
         &self,
-        node: &Node<'a>,
+        node: &NodeInfo<'a>,
         ctx: &mut SimulationContext<'a>,
         _validators: &[Validator],
     ) -> Result<Process, Error> {
@@ -46,10 +48,8 @@ impl Client for Lighthouse {
             format!("{ip}:{CL_PROMETHEUS_PORT}"),
         );
 
-        Ok(Process {
-            path: self.executable.clone(),
-            args: format!(
-                "--testnet-dir \"{}\" \
+        let mut args = format!(
+            "--testnet-dir \"{}\" \
                 beacon_node \
                 --datadir \"{dir}\" \
                 --execution-endpoint http://localhost:{ENGINE_API_PORT} \
@@ -66,15 +66,25 @@ impl Client for Lighthouse {
                 --disable-packet-filter \
                 --metrics-address 0.0.0.0 \
                 --metrics-port {CL_PROMETHEUS_PORT} \
-                --metrics {}",
-                ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
-                ctx.jwt_path().to_str().ok_or(Error::NonUTF8Path)?,
-                ctx.cl_bootnode_enrs().join(","),
-                self.extra_args,
-            ),
+                --metrics \
+                {} ",
+            ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
+            ctx.jwt_path().to_str().ok_or(Error::NonUTF8Path)?,
+            ctx.cl_bootnode_enrs().join(","),
+            self.extra_args,
+        );
+        if self.lower_target_peers && ctx.num_cl_clients() <= 100 {
+            args.push_str(&format!("--target-peers {}", ctx.num_cl_clients() - 1));
+        }
+
+        Ok(Process {
+            path: self.executable.clone(),
+            args,
             environment: HashMap::new(),
             expected_final_state: "running".into(),
             start_time: "5s".into(),
         })
     }
+
+    fn is_cl_client(&self) -> bool { true }
 }

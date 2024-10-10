@@ -8,7 +8,7 @@ use serde::Deserialize;
 use crate::clients::{Client, Validator};
 use crate::config::shadow::Process;
 use crate::error::Error;
-use crate::node::{Node, SimulationContext};
+use crate::node::{NodeInfo, SimulationContext};
 use crate::CowStr;
 
 const DISC_PORT: u16 = 30305;
@@ -31,7 +31,7 @@ impl Default for GethBootnode {
 impl Client for GethBootnode {
     fn add_to_node(
         &self,
-        node: &Node,
+        node: &NodeInfo,
         ctx: &mut SimulationContext,
         _validators: &[Validator],
     ) -> Result<Process, Error> {
