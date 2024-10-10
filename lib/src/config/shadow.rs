@@ -4,6 +4,7 @@ use serde::Serialize;
 use serde_yaml::mapping::IterMut;
 use serde_yaml::{to_value, Mapping, Value};
 use std::collections::HashMap;
+use std::time::Duration;
 
 /// A light wrapper around a yaml mapping representing the root of a shadow config with some useful
 /// setters and getters
@@ -30,6 +31,22 @@ pub struct Process {
 }
 
 impl ShadowConfig {
+    pub fn general_mut(&mut self) -> Result<&mut Mapping, Error> {
+        self.0
+            .entry("general".into())
+            .or_insert(Mapping::new().into())
+            .as_mapping_mut()
+            .ok_or_else(|| Error::ExpectedOtherType("general".into()))
+    }
+
+    pub fn experimental_mut(&mut self) -> Result<&mut Mapping, Error> {
+        self.0
+            .entry("experimental".into())
+            .or_insert(Mapping::new().into())
+            .as_mapping_mut()
+            .ok_or_else(|| Error::ExpectedOtherType("experimental".into()))
+    }
+
     pub fn seed(&self) -> u64 {
         self.0
             .get("general")
@@ -82,6 +99,28 @@ impl ShadowConfig {
                 .transpose()?
                 .map(|h| h.iter_mut()),
         })
+    }
+
+    pub fn apply_defaults(&mut self, runahead: Duration) -> Result<(), Error> {
+        let general = self.general_mut()?;
+        general
+            .entry("model_unblocked_syscall_latency".into())
+            .or_insert(Value::Bool(true));
+        general
+            .entry("heartbeat_interval".into())
+            .or_insert_with(|| Value::String("1m".into()));
+        let experimental = self.experimental_mut()?;
+        // todo: warn user if they override runahead with a value larger than the min latency
+        experimental
+            .entry("runahead".into())
+            .or_insert_with(|| format!("{}ns", runahead.as_nanos()).into());
+        experimental
+            .entry("use_memory_manager".into())
+            .or_insert(Value::Bool(true));
+        experimental
+            .entry("host_heartbeat_interval".into())
+            .or_insert_with(|| Value::String("1m".into()));
+        Ok(())
     }
 }
 

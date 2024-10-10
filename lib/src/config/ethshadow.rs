@@ -376,6 +376,15 @@ impl EthShadowConfig {
         self.clients.entry(name.into()).or_insert(Box::new(client));
     }
 
+    pub fn minimum_latency(&self) -> Duration {
+        self.locations
+            .values()
+            .flat_map(|loc| loc.latency_to.values())
+            .map(|latency| latency.into_inner())
+            .min()
+            .expect("latencies should be specified at this point")
+    }
+
     pub fn desugar_nodes(&self) -> Result<Vec<Node>, Error> {
         let mut result = vec![];
 

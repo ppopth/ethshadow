@@ -3,3 +3,5 @@ data*
 target
 .idea
 *.swp
+/*.yaml
+/*.yml

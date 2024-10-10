@@ -60,6 +60,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
         mut shadow_config,
     } = config.try_into()?;
     ethshadow_config.add_default_builtins();
+    shadow_config.apply_defaults(ethshadow_config.minimum_latency())?;
 
     create_dir(&output_path).map_err(|e| match e.kind() {
         ErrorKind::AlreadyExists => Error::OutputFolderExists,
