@@ -6,14 +6,15 @@
 //! ```
 
 use clap::{arg, command, value_parser};
+use color_eyre::Result;
 use ethshadow::generate;
 use std::env;
-use std::error::Error;
 use std::fs::File;
 use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
+use color_eyre::eyre::WrapErr;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     let mut matches = command!() // requires `cargo` feature
         .bin_name("ethshadow")
         .arg(arg!(dir: -d [DIR] "Output directory for ethshadow and Shadow")
@@ -32,16 +33,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         .expect("there is a default in place");
     let config = matches.get_one::<PathBuf>("config").expect("required arg");
 
-    let config = File::open(config)?;
+    let config = File::open(config).wrap_err("Unable to read the config")?;
 
-    let mut invocation = generate(config, dir)?;
+    let mut invocation = generate(config, dir).wrap_err("Failed to generate data directory")?;
 
     if !matches.get_flag("genonly") {
         if let Some(user_args) = matches.get_many::<String>("shadow_cli") {
             invocation.with_user_args(user_args);
         }
         // if exec() returns, the call failed!
-        Err(invocation.command().exec().into())
+        Err(invocation.command().exec()).wrap_err("Failed to invoke Shadow")
     } else {
         Ok(())
     }

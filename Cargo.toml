@@ -30,3 +30,4 @@ path = "ethshadow.rs"
 [dependencies]
 ethshadow = { path = "lib" }
 clap = { version = "4.5", features = ["cargo"] }
+color-eyre = "0.6"
