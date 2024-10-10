@@ -1,12 +1,13 @@
 use crate::config::ethshadow::DEFAULT_MNEMONIC;
 use crate::config::EthShadowConfig;
 use crate::error::Error;
+use crate::utils::log_and_wait;
 use std::ffi::OsString;
 use std::fmt::Display;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::process::Command;
 use users::get_current_uid;
 
 pub const GENESIS_FORK_VERSION: &str = "0x10000000";
@@ -151,18 +152,17 @@ pub fn generate(image_name: &str, output_path: OsString) -> Result<(), Error> {
     data_mount.push(":/data");
     let mut config_mount = output_path;
     config_mount.push("/values.env:/config/values.env");
-    let status = Command::new("docker")
-        .args(["run", "--rm", "-i", "-u"])
-        .arg(get_current_uid().to_string())
-        .arg("-v")
-        .arg(data_mount)
-        .arg("-v")
-        .arg(config_mount)
-        .arg(image_name)
-        .arg("all")
-        .stdout(Stdio::null())
-        .spawn()?
-        .wait()?;
+    let status = log_and_wait(
+        Command::new("docker")
+            .args(["run", "--rm", "-i", "-u"])
+            .arg(get_current_uid().to_string())
+            .arg("-v")
+            .arg(data_mount)
+            .arg("-v")
+            .arg(config_mount)
+            .arg(image_name)
+            .arg("all"),
+    )?;
     if status.success() {
         Ok(())
     } else {

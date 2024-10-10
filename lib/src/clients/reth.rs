@@ -67,5 +67,7 @@ impl Client for Reth {
         })
     }
 
-    fn is_el_client(&self) -> bool { true }
+    fn is_el_client(&self) -> bool {
+        true
+    }
 }

@@ -2,12 +2,14 @@ use crate::clients::{Client, ValidatorDemand};
 use crate::config::ethshadow::{Node, DEFAULT_GENESIS_GEN_IMAGE, DEFAULT_MNEMONIC};
 use crate::config::EthShadowConfig;
 use crate::error::Error;
+use crate::utils::log_and_wait;
 use itertools::Itertools;
+use log::info;
 use std::cmp::min;
 use std::ffi::OsString;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
 use users::get_current_uid;
 
 pub struct ValidatorManager {
@@ -60,6 +62,7 @@ impl ValidatorManager {
             }
         };
 
+        info!("Generating {validator_count} validators");
         let validators = generate(
             config
                 .genesis
@@ -114,26 +117,26 @@ fn generate(
     let mut data_mount = output_path.as_os_str().to_owned();
     data_mount.push(":/data");
     while validators.len() < total_val {
-        let status = Command::new("docker")
-            .args(["run", "--rm", "-i", "-u"])
-            .arg(get_current_uid().to_string())
-            .arg("-v")
-            .arg(&data_mount)
-            .arg("--entrypoint=eth2-val-tools")
-            .arg(image_name)
-            .arg("keystores")
-            .arg("--insecure")
-            .arg("--out-loc")
-            .arg(format!("/data/validator_keys_{idx}"))
-            .arg("--source-mnemonic")
-            .arg(mnemonic)
-            .arg("--source-min")
-            .arg(validators.len().to_string())
-            .arg("--source-max")
-            .arg(min(validators.len() + 4000, total_val).to_string())
-            .stdout(Stdio::null())
-            .spawn()?
-            .wait()?;
+        info!("Generating validator batch {}", idx + 1);
+        let status = log_and_wait(
+            Command::new("docker")
+                .args(["run", "--rm", "-i", "-u"])
+                .arg(get_current_uid().to_string())
+                .arg("-v")
+                .arg(&data_mount)
+                .arg("--entrypoint=eth2-val-tools")
+                .arg(image_name)
+                .arg("keystores")
+                .arg("--insecure")
+                .arg("--out-loc")
+                .arg(format!("/data/validator_keys_{idx}"))
+                .arg("--source-mnemonic")
+                .arg(mnemonic)
+                .arg("--source-min")
+                .arg(validators.len().to_string())
+                .arg("--source-max")
+                .arg(min(validators.len() + 4000, total_val).to_string()),
+        )?;
         if !status.success() {
             return Err(Error::ChildProcessFailure(image_name.to_string()));
         }

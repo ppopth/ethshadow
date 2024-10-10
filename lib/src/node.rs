@@ -1,4 +1,5 @@
 use crate::clients::Client;
+use crate::config::ethshadow::Node;
 use crate::config::shadow::Host;
 use crate::config::ShadowConfig;
 use crate::error::Error;
@@ -9,7 +10,6 @@ use std::collections::{HashMap, HashSet};
 use std::fs::{create_dir, File};
 use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
-use crate::config::ethshadow::Node;
 
 pub struct NodeManager<'c, 'n> {
     ctx: SimulationContext<'n>,
@@ -176,7 +176,13 @@ pub struct SimulationContext<'a> {
 }
 
 impl<'a> SimulationContext<'a> {
-    pub fn new(rng: StdRng, metadata_path: PathBuf, jwt_path: PathBuf, num_el_clients: usize, num_cl_clients: usize) -> Self {
+    pub fn new(
+        rng: StdRng,
+        metadata_path: PathBuf,
+        jwt_path: PathBuf,
+        num_el_clients: usize,
+        num_cl_clients: usize,
+    ) -> Self {
         Self {
             rng,
             metadata_path,

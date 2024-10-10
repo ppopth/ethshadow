@@ -86,5 +86,7 @@ impl Client for Lighthouse {
         })
     }
 
-    fn is_cl_client(&self) -> bool { true }
+    fn is_cl_client(&self) -> bool {
+        true
+    }
 }

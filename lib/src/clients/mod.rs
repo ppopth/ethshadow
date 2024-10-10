@@ -42,6 +42,10 @@ pub trait Client: Debug {
         ValidatorDemand::None
     }
 
-    fn is_cl_client(&self) -> bool { false }
-    fn is_el_client(&self) -> bool { false }
+    fn is_cl_client(&self) -> bool {
+        false
+    }
+    fn is_el_client(&self) -> bool {
+        false
+    }
 }

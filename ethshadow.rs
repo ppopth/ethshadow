@@ -8,6 +8,7 @@
 use clap::{arg, command, value_parser};
 use color_eyre::eyre::WrapErr;
 use color_eyre::Result;
+use env_logger::Env;
 use ethshadow::generate;
 use std::env;
 use std::fs::File;
@@ -27,6 +28,8 @@ fn main() -> Result<()> {
                 .last(true),
         )
         .get_matches();
+
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     let dir = matches
         .remove_one::<PathBuf>("dir")

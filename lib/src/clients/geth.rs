@@ -3,11 +3,13 @@ use crate::clients::{Client, JSON_RPC_PORT};
 use crate::config::shadow::Process;
 use crate::error::Error;
 use crate::node::{NodeInfo, SimulationContext};
+use crate::utils::log_and_wait;
 use crate::validators::Validator;
 use crate::CowStr;
+use log::debug;
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 const PORT: &str = "21000";
 
@@ -39,14 +41,14 @@ impl Client for Geth {
         let dir = node.dir().join("geth");
         let dir = dir.to_str().ok_or(Error::NonUTF8Path)?;
 
-        let status = Command::new(self.executable.as_ref())
-            .arg("init")
-            .arg("--datadir")
-            .arg(dir)
-            .arg(genesis_file)
-            .stdout(Stdio::null())
-            .spawn()?
-            .wait()?;
+        debug!("Calling geth init");
+        let status = log_and_wait(
+            Command::new(self.executable.as_ref())
+                .arg("init")
+                .arg("--datadir")
+                .arg(dir)
+                .arg(genesis_file),
+        )?;
         if !status.success() {
             return Err(Error::ChildProcessFailure("geth init".to_string()));
         }
@@ -79,5 +81,7 @@ impl Client for Geth {
         })
     }
 
-    fn is_el_client(&self) -> bool { true }
+    fn is_el_client(&self) -> bool {
+        true
+    }
 }
