@@ -176,7 +176,7 @@ pub struct Cluster {
 
 pub fn default_client_stack() -> HashMap<String, OneOrMany<String>> {
     [
-        ("el".into(), OneOrMany::One("reth".into())),
+        ("el".into(), OneOrMany::One("geth".into())),
         ("cl".into(), OneOrMany::One("lighthouse".into())),
         ("vc".into(), OneOrMany::One("lighthouse_vc".into())),
     ]
