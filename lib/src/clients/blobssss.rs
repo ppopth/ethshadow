@@ -7,7 +7,7 @@ use itertools::Itertools;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct SimpleBlobSpammer {
+pub struct Blobssss {
     executable: String,
     private_key: String,
     min_per_slot: u8,
@@ -15,8 +15,8 @@ pub struct SimpleBlobSpammer {
     start_time: String,
 }
 
-#[typetag::deserialize(name = "simple_blob_spammer")]
-impl Client for SimpleBlobSpammer {
+#[typetag::deserialize(name = "blobssss")]
+impl Client for Blobssss {
     fn add_to_node(
         &self,
         _node: &NodeInfo,

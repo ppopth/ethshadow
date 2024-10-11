@@ -16,7 +16,7 @@ pub mod lighthouse_bootnode;
 pub mod lighthouse_vc;
 pub mod prometheus;
 pub mod reth;
-pub mod simple_blob_spammer;
+pub mod blobssss;
 
 pub enum ValidatorDemand {
     /// We do not need validator keys. The validator slice will be empty.
