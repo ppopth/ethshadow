@@ -1,6 +1,6 @@
 use crate::config::ethshadow::{Genesis, DEFAULT_MNEMONIC};
-use crate::error::Error;
 use crate::utils::log_and_wait;
+use crate::Error;
 use std::ffi::OsString;
 use std::fmt::Display;
 use std::fs::File;

@@ -25,8 +25,7 @@ fn main() -> Result<()> {
         .arg(arg!(config: <CONFIG> "Configuration file. See CONFIG.md")
             .value_parser(value_parser!(PathBuf)))
         .arg(arg!(shadow_cli: [SHADOW_CLI_OPTION]... "Optional options passed on to Shadow, except \"-d\" and the config")
-                .last(true),
-        )
+            .last(true))
         .get_matches();
 
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();

@@ -1,10 +1,10 @@
 use crate::clients::Client;
 use crate::clients::{BEACON_API_PORT, CL_PROMETHEUS_PORT, ENGINE_API_PORT};
 use crate::config::shadow::Process;
-use crate::error::Error;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
 use crate::CowStr;
+use crate::Error;
 use serde::Deserialize;
 use std::collections::HashMap;
 

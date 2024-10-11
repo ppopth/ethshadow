@@ -1,7 +1,7 @@
 use crate::config::ethshadow::Topology;
 use crate::config::EthShadowConfig;
-use crate::error::Error;
 use crate::gml::{Gml, NetworkNode};
+use crate::Error;
 use std::collections::BTreeMap;
 
 pub struct GeneratedNetworkGraph<'a> {
@@ -25,7 +25,7 @@ pub trait NetworkGraph {
 }
 
 pub struct SimpleNetworkGraph<'a> {
-    pub nodes: BTreeMap<&'a str, BTreeMap<&'a str, NetworkNode>>,
+    nodes: BTreeMap<&'a str, BTreeMap<&'a str, NetworkNode>>,
 }
 
 impl SimpleNetworkGraph<'_> {

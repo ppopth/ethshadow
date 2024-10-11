@@ -1,9 +1,9 @@
 use crate::clients::Client;
 use crate::config::shadow::Process;
-use crate::error::Error;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
 use crate::CowStr;
+use crate::Error;
 use serde::{Deserialize, Serialize};
 use serde_yaml::to_writer;
 use std::collections::HashMap;

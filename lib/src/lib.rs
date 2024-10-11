@@ -1,6 +1,5 @@
 use crate::config::ethshadow::DEFAULT_GENESIS_GEN_IMAGE;
 use crate::config::FullConfig;
-use crate::error::Error;
 use crate::network_graph::{generate_network_graph, GeneratedNetworkGraph};
 use crate::node::NodeManager;
 use crate::validators::ValidatorManager;
@@ -14,14 +13,17 @@ use std::path::PathBuf;
 use std::process::Command;
 
 mod clients;
-mod config;
+pub mod config;
 mod error;
-mod genesis;
+pub mod genesis;
 mod gml;
-mod network_graph;
-mod node;
+pub mod network_graph;
+pub mod node;
 mod utils;
-mod validators;
+pub mod validators;
+
+// reexports
+pub use crate::error::Error;
 
 type CowStr = Cow<'static, str>;
 

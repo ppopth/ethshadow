@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::Error;
 use log::{debug, warn};
 use std::io::{BufRead, BufReader, Read};
 use std::process::{Command, ExitStatus, Stdio};

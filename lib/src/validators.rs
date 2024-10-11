@@ -1,8 +1,8 @@
 use crate::clients::{Client, ValidatorDemand};
 use crate::config::ethshadow::{Node, DEFAULT_GENESIS_GEN_IMAGE, DEFAULT_MNEMONIC};
 use crate::config::EthShadowConfig;
-use crate::error::Error;
 use crate::utils::log_and_wait;
+use crate::Error;
 use itertools::Itertools;
 use log::info;
 use std::cmp::min;

@@ -21,7 +21,7 @@ use std::time::Duration;
 #[serde(default)]
 pub struct EthShadowConfig {
     #[serde(deserialize_with = "deserialize_nodes")]
-    pub nodes: Vec<SugaredNode>,
+    nodes: Vec<SugaredNode>,
     pub locations: HashMap<CowStr, Location>,
     pub reliabilities: HashMap<CowStr, Reliability>,
     pub validators: Option<u64>,
@@ -35,7 +35,7 @@ pub struct EthShadowConfig {
 
 #[derive(Deserialize, Clone, Debug)]
 #[serde(untagged)]
-pub enum NodeConfig {
+enum NodeConfig {
     Simple(u64),
     Detailed(Vec<SugaredNode>),
 }
@@ -69,7 +69,7 @@ fn deserialize_nodes<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<SugaredNode>
 }
 
 #[derive(Deserialize, Clone, Debug)]
-pub struct SugaredNode {
+struct SugaredNode {
     #[serde(alias = "location")]
     pub locations: OneOrMany<String>,
     #[serde(alias = "reliability")]
@@ -83,7 +83,7 @@ pub struct SugaredNode {
 }
 
 impl SugaredNode {
-    pub fn combinations(&self) -> u64 {
+    fn combinations(&self) -> u64 {
         self.locations.len() as u64
             * self.reliabilities.len() as u64
             * self
@@ -93,7 +93,7 @@ impl SugaredNode {
                 .product::<usize>() as u64
     }
 
-    pub fn count_per_combination(&self) -> Result<u64, Error> {
+    fn count_per_combination(&self) -> Result<u64, Error> {
         match self.count {
             NodeCount::CountPerCombination(count) => Ok(count),
             NodeCount::TotalCount(count) => {
@@ -108,7 +108,7 @@ impl SugaredNode {
 }
 
 #[derive(Deserialize, Clone, Copy, Debug)]
-pub enum NodeCount {
+enum NodeCount {
     #[serde(rename = "per_combination")]
     CountPerCombination(u64),
     #[serde(rename = "total")]
@@ -355,7 +355,7 @@ impl EthShadowConfig {
         self.add_builtin_client("prometheus", Prometheus::default());
     }
 
-    fn add_builtin_location<const N: usize>(
+    pub fn add_builtin_location<const N: usize>(
         &mut self,
         name: &'static str,
         params: [(&'static str, u64, f32); N],
@@ -370,11 +370,11 @@ impl EthShadowConfig {
         }
     }
 
-    fn add_builtin_reliability(&mut self, name: &'static str, params: Reliability) {
+    pub fn add_builtin_reliability(&mut self, name: &'static str, params: Reliability) {
         self.reliabilities.entry(name.into()).or_insert(params);
     }
 
-    fn add_builtin_client<C: Client + 'static>(&mut self, name: &'static str, client: C) {
+    pub fn add_builtin_client<C: Client + 'static>(&mut self, name: &'static str, client: C) {
         self.clients.entry(name.into()).or_insert(Box::new(client));
     }
 
@@ -392,8 +392,7 @@ impl EthShadowConfig {
 
         for node in &self.nodes {
             let clients: Vec<Vec<_>> = if !node.clients.is_empty() {
-                node
-                    .clients
+                node.clients
                     .values()
                     .map(|clients| {
                         clients
@@ -408,12 +407,15 @@ impl EthShadowConfig {
                     })
                     .try_collect()?
             } else {
-                self.default_clients.values().map(|client| {
-                    self.clients
-                        .get(client)
-                        .map(|b| vec![b.as_ref()])
-                        .ok_or_else(|| Error::UnknownClient(client.to_string()))
-                }).try_collect()?
+                self.default_clients
+                    .values()
+                    .map(|client| {
+                        self.clients
+                            .get(client)
+                            .map(|b| vec![b.as_ref()])
+                            .ok_or_else(|| Error::UnknownClient(client.to_string()))
+                    })
+                    .try_collect()?
             };
             for location in &node.locations {
                 for reliability in &node.reliabilities {

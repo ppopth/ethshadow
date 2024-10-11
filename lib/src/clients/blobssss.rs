@@ -1,8 +1,8 @@
 use crate::clients::Client;
 use crate::config::shadow::Process;
-use crate::error::Error;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
+use crate::Error;
 use itertools::Itertools;
 use serde::Deserialize;
 

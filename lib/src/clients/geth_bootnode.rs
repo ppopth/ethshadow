@@ -7,9 +7,9 @@ use serde::Deserialize;
 
 use crate::clients::{Client, Validator};
 use crate::config::shadow::Process;
-use crate::error::Error;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::CowStr;
+use crate::Error;
 
 const DISC_PORT: u16 = 30305;
 

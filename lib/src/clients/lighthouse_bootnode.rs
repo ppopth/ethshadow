@@ -6,9 +6,9 @@ use std::process::Command;
 
 use crate::clients::{Client, Validator};
 use crate::config::shadow::Process;
-use crate::error::Error;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::utils::log_and_wait;
+use crate::Error;
 use crate::{genesis, CowStr};
 
 const PORT: &str = "4011";
