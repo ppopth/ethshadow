@@ -1,5 +1,4 @@
-use crate::config::ethshadow::DEFAULT_MNEMONIC;
-use crate::config::EthShadowConfig;
+use crate::config::ethshadow::{Genesis, DEFAULT_MNEMONIC};
 use crate::error::Error;
 use crate::utils::log_and_wait;
 use std::ffi::OsString;
@@ -12,8 +11,11 @@ use users::get_current_uid;
 
 pub const GENESIS_FORK_VERSION: &str = "0x10000000";
 
-pub fn write_config(config: &EthShadowConfig, mut output_path: PathBuf) -> Result<(), Error> {
-    let genesis = &config.genesis;
+pub fn write_config(
+    genesis: &Genesis,
+    num_validators: usize,
+    mut output_path: PathBuf,
+) -> Result<(), Error> {
     output_path.push("values.env");
     let mut file = BufWriter::new(File::create_new(output_path)?);
     let file = &mut file;
@@ -44,11 +46,7 @@ pub fn write_config(config: &EthShadowConfig, mut output_path: PathBuf) -> Resul
         "DEPOSIT_CONTRACT_BLOCK",
         "0x0000000000000000000000000000000000000000000000000000000000000000",
     )?;
-    export(
-        file,
-        "NUMBER_OF_VALIDATORS",
-        config.validators.unwrap_or(80),
-    )?;
+    export(file, "NUMBER_OF_VALIDATORS", num_validators)?;
     export(file, "GENESIS_FORK_VERSION", "0x10000000")?;
     export(file, "ALTAIR_FORK_VERSION", "0x20000000")?;
     export(file, "BELLATRIX_FORK_VERSION", "0x30000000")?;

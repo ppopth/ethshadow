@@ -1,9 +1,9 @@
+use crate::config::ethshadow::DEFAULT_GENESIS_GEN_IMAGE;
 use crate::config::FullConfig;
 use crate::error::Error;
 use crate::network_graph::{generate_network_graph, GeneratedNetworkGraph};
 use crate::node::NodeManager;
 use crate::validators::ValidatorManager;
-use config::ethshadow;
 use log::{debug, info};
 use serde_yaml::Value;
 use std::borrow::Cow;
@@ -73,14 +73,24 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
     output_path = output_path.canonicalize()?;
     let dir_path = output_path.clone().into_os_string();
 
+    debug!("Desugaring node config");
+    let nodes = ethshadow_config.desugar_nodes()?;
+
+    debug!("Computing validators");
+    let validators = ValidatorManager::new(&ethshadow_config, &nodes, &output_path)?;
+
     info!("Generating genesis information");
-    genesis::write_config(&ethshadow_config, output_path.clone())?;
+    genesis::write_config(
+        &ethshadow_config.genesis,
+        validators.total_count(),
+        output_path.clone(),
+    )?;
     genesis::generate(
         ethshadow_config
             .genesis
             .generator_image
             .as_deref()
-            .unwrap_or(ethshadow::DEFAULT_GENESIS_GEN_IMAGE),
+            .unwrap_or(DEFAULT_GENESIS_GEN_IMAGE),
         dir_path,
     )?;
 
@@ -103,11 +113,6 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
             }
         }
     }
-
-    let nodes = ethshadow_config.desugar_nodes()?;
-
-    debug!("Computing validators");
-    let validators = ValidatorManager::new(&ethshadow_config, &nodes, &output_path)?;
 
     info!("Generating nodes");
     let mut node_manager = NodeManager::new(

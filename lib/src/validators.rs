@@ -104,6 +104,10 @@ impl ValidatorManager {
         self.already_assigned = end;
         &self.validators[start..end]
     }
+
+    pub fn total_count(&self) -> usize {
+        self.validators.len()
+    }
 }
 
 fn generate(
