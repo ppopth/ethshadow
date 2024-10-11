@@ -16,7 +16,7 @@ use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 
 fn main() -> Result<()> {
-    let mut matches = command!() // requires `cargo` feature
+    let matches = command!() // requires `cargo` feature
         .bin_name("ethshadow")
         .arg(arg!(dir: -d [DIR] "Output directory for ethshadow and Shadow")
             .value_parser(value_parser!(PathBuf))
@@ -31,13 +31,14 @@ fn main() -> Result<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     let dir = matches
-        .remove_one::<PathBuf>("dir")
+        .get_one::<PathBuf>("dir")
         .expect("there is a default in place");
     let config = matches.get_one::<PathBuf>("config").expect("required arg");
 
     let config = File::open(config).wrap_err("Unable to read the config")?;
 
-    let mut invocation = generate(config, dir).wrap_err("Failed to generate data directory")?;
+    let mut invocation =
+        generate(config, dir, false).wrap_err("Failed to generate data directory")?;
 
     if !matches.get_flag("genonly") {
         if let Some(user_args) = matches.get_many::<String>("shadow_cli") {

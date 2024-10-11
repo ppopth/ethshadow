@@ -1,0 +1,67 @@
+general:
+  model_unblocked_syscall_latency: true
+  stop_time: 1h
+  progress: true
+  heartbeat_interval: 1m
+
+experimental:
+  runahead: 20ms
+  use_memory_manager: true
+  host_heartbeat_interval: 1m
+
+ethereum:
+  validators: 160
+  nodes:
+    - location: europe
+      reliability: reliable
+      tag: boot
+      clients:
+        el: geth_bootnode
+        cl: lighthouse_bootnode
+    - locations:
+        - europe
+        - na_east
+        - na_west
+      reliabilities:
+        - reliable
+        - home
+      count:
+        per_combination: 4
+      clients:
+        el: geth
+        cl: lighthouse
+        vc: lighthouse_vc
+    - locations:
+        - east_asia
+        - australia
+        - west_asia
+      reliabilities:
+        - reliable
+        - home
+      count:
+        per_combination: 2
+    - location: europe
+      reliability: reliable
+      tag: monitoring
+      clients:
+        monitoring: prometheus
+    - location: europe
+      reliability: reliable
+      tag: spammer
+      clients:
+        spamming: spammer
+  clients:
+    spammer:
+      type: blobssss
+      executable: blobssss
+      private_key: "087e1e65a8127930dc08bc7cfcf2dd19400112910e40247dfe71a1d82365958d"
+      min_per_slot: 2
+      max_per_slot: 4
+      start_time: 330s
+  default_clients:
+    el: reth
+    cl: lighthouse
+    vc: lighthouse_vc
+  genesis:
+    premine:
+      5E015fB7fdD3882dd62C5A7fDc41E02cAE6ce459: 1000000ETH

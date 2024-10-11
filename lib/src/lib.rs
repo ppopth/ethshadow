@@ -9,7 +9,7 @@ use std::borrow::Cow;
 use std::ffi::{OsStr, OsString};
 use std::fs::{create_dir, File};
 use std::io::ErrorKind;
-use std::path::PathBuf;
+use std::path::Path;
 use std::process::Command;
 
 mod clients;
@@ -56,7 +56,8 @@ impl ShadowInvocation {
 
 pub fn generate<T: TryInto<FullConfig, Error = Error>>(
     config: T,
-    mut output_path: PathBuf,
+    output_path: &Path,
+    use_existing_dir: bool,
 ) -> Result<ShadowInvocation, Error> {
     debug!("Reading config file");
     // get the config and extend it with our supported builtins
@@ -68,12 +69,16 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
     shadow_config.apply_defaults(ethshadow_config.minimum_latency())?;
 
     debug!("Creating output directory");
-    create_dir(&output_path).map_err(|e| match e.kind() {
-        ErrorKind::AlreadyExists => Error::OutputFolderExists,
-        _ => Error::Io(e),
-    })?;
-    output_path = output_path.canonicalize()?;
-    let dir_path = output_path.clone().into_os_string();
+    if let Err(e) = create_dir(output_path) {
+        if e.kind() == ErrorKind::AlreadyExists {
+            if !use_existing_dir {
+                return Err(Error::OutputFolderExists);
+            }
+        } else {
+            return Err(e.into());
+        }
+    };
+    let mut output_path = output_path.canonicalize()?;
 
     debug!("Desugaring node config");
     let nodes = ethshadow_config.desugar_nodes()?;
@@ -93,7 +98,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
             .generator_image
             .as_deref()
             .unwrap_or(DEFAULT_GENESIS_GEN_IMAGE),
-        dir_path,
+        &output_path,
     )?;
 
     debug!("Generating network graph");

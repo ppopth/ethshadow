@@ -1,11 +1,10 @@
 use crate::config::ethshadow::{Genesis, DEFAULT_MNEMONIC};
 use crate::utils::log_and_wait;
 use crate::Error;
-use std::ffi::OsString;
 use std::fmt::Display;
 use std::fs::File;
 use std::io::{BufWriter, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use users::get_current_uid;
 
@@ -145,10 +144,10 @@ fn export_optional<W: Write, V: Display>(
     }
 }
 
-pub fn generate(image_name: &str, output_path: OsString) -> Result<(), Error> {
-    let mut data_mount = output_path.clone();
+pub fn generate(image_name: &str, output_path: &Path) -> Result<(), Error> {
+    let mut data_mount = output_path.as_os_str().to_owned();
     data_mount.push(":/data");
-    let mut config_mount = output_path;
+    let mut config_mount = output_path.as_os_str().to_owned();
     config_mount.push("/values.env:/config/values.env");
     let status = log_and_wait(
         Command::new("docker")
