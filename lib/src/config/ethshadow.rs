@@ -26,6 +26,8 @@ pub struct EthShadowConfig {
     pub reliabilities: HashMap<CowStr, Reliability>,
     pub validators: Option<u64>,
     pub clients: HashMap<CowStr, Box<dyn Client>>,
+    #[serde(default = "default_clients")]
+    pub default_clients: HashMap<CowStr, CowStr>,
     pub genesis: Genesis,
     pub topology: Topology,
     pub shadow_path: Option<String>,
@@ -57,7 +59,7 @@ fn deserialize_nodes<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<SugaredNode>
             SugaredNode {
                 locations: OneOrMany::One("europe".into()),
                 reliabilities: OneOrMany::One("reliable".into()),
-                clients: default_client_stack(),
+                clients: HashMap::new(),
                 count: NodeCount::TotalCount(count),
                 tag: None,
             },
@@ -72,7 +74,7 @@ pub struct SugaredNode {
     pub locations: OneOrMany<String>,
     #[serde(alias = "reliability")]
     pub reliabilities: OneOrMany<String>,
-    #[serde(default = "default_client_stack")]
+    #[serde(default)]
     pub clients: HashMap<String, OneOrMany<String>>,
     #[serde(default)]
     pub count: NodeCount,
@@ -174,11 +176,11 @@ pub struct Cluster {
     pub cluster_latencies: Vec<u64>,
 }
 
-pub fn default_client_stack() -> HashMap<String, OneOrMany<String>> {
+pub fn default_clients() -> HashMap<CowStr, CowStr> {
     [
-        ("el".into(), OneOrMany::One("geth".into())),
-        ("cl".into(), OneOrMany::One("lighthouse".into())),
-        ("vc".into(), OneOrMany::One("lighthouse_vc".into())),
+        ("el".into(), "geth".into()),
+        ("cl".into(), "lighthouse".into()),
+        ("vc".into(), "lighthouse_vc".into()),
     ]
     .into_iter()
     .collect()
@@ -389,21 +391,30 @@ impl EthShadowConfig {
         let mut result = vec![];
 
         for node in &self.nodes {
-            let clients: Vec<Vec<_>> = node
-                .clients
-                .values()
-                .map(|clients| {
-                    clients
-                        .iter()
-                        .map(|client| {
-                            self.clients
-                                .get(client.as_str())
-                                .map(|b| b.as_ref())
-                                .ok_or_else(|| Error::UnknownClient(client.clone()))
-                        })
-                        .try_collect()
-                })
-                .try_collect()?;
+            let clients: Vec<Vec<_>> = if !node.clients.is_empty() {
+                node
+                    .clients
+                    .values()
+                    .map(|clients| {
+                        clients
+                            .iter()
+                            .map(|client| {
+                                self.clients
+                                    .get(client.as_str())
+                                    .map(|b| b.as_ref())
+                                    .ok_or_else(|| Error::UnknownClient(client.clone()))
+                            })
+                            .try_collect()
+                    })
+                    .try_collect()?
+            } else {
+                self.default_clients.values().map(|client| {
+                    self.clients
+                        .get(client)
+                        .map(|b| vec![b.as_ref()])
+                        .ok_or_else(|| Error::UnknownClient(client.to_string()))
+                }).try_collect()?
+            };
             for location in &node.locations {
                 for reliability in &node.reliabilities {
                     for clients in clients
