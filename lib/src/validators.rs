@@ -41,25 +41,22 @@ impl ValidatorManager {
             }
         }
 
-        match config.validators {
-            Some(validators) => {
-                let Some(remaining) = validators.checked_sub(requested) else {
-                    return Err(Error::MoreValidatorsRequested(validators, requested));
-                };
-                validator_count = validators;
-                if anys != 0 {
-                    val_for_each_any = remaining / anys;
-                    remainder = remaining % anys;
-                } else if remaining != 0 {
-                    return Err(Error::LeftoverValidators);
-                }
+        if let Some(validators) = config.validators {
+            let Some(remaining) = validators.checked_sub(requested) else {
+                return Err(Error::MoreValidatorsRequested(validators, requested));
+            };
+            validator_count = validators;
+            if anys != 0 {
+                val_for_each_any = remaining / anys;
+                remainder = remaining % anys;
+            } else if remaining != 0 {
+                return Err(Error::LeftoverValidators);
             }
-            None => {
-                if anys != 0 {
-                    return Err(Error::MissingValidatorCount);
-                }
-                validator_count = requested;
+        } else {
+            if anys != 0 {
+                return Err(Error::MissingValidatorCount);
             }
+            validator_count = requested;
         };
 
         info!("Generating {validator_count} validators");
@@ -75,13 +72,13 @@ impl ValidatorManager {
                 .mnemonic
                 .as_deref()
                 .unwrap_or(DEFAULT_MNEMONIC),
-            validator_count as usize,
+            validator_count,
         )?;
 
         Ok(ValidatorManager {
             validators,
-            val_for_each_any: val_for_each_any as usize,
-            remainder: remainder as usize,
+            val_for_each_any,
+            remainder,
             already_assigned: 0,
         })
     }
@@ -97,7 +94,7 @@ impl ValidatorManager {
                     self.val_for_each_any
                 }
             }
-            ValidatorDemand::Count(count) => count as usize,
+            ValidatorDemand::Count(count) => count,
         };
         let start = self.already_assigned;
         let end = start + count;

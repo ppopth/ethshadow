@@ -53,8 +53,8 @@ impl<'c, 'n> NodeManager<'c, 'n> {
             rng,
             base_dir.join("metadata"),
             base_dir.join("jwt/jwtsecret"),
-            num_el_clients as usize,
-            num_cl_clients as usize,
+            num_el_clients,
+            num_cl_clients,
         );
         Self {
             ctx,

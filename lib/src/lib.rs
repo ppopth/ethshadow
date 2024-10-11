@@ -111,7 +111,7 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
     // postprocessing given shadow config values: overwrite string network ids
     for host in shadow_config.hosts_mut()? {
         if let Some(node_id) = host?.network_node_id_mut() {
-            if let Some((location, reliability)) = node_id.as_str().and_then(|s| s.split_once("-"))
+            if let Some((location, reliability)) = node_id.as_str().and_then(|s| s.split_once('-'))
             {
                 let node = network_graph.assign_network_node(location, reliability)?;
                 *node_id = Value::Number(node.id().into());

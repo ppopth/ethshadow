@@ -134,7 +134,7 @@ impl<'a> Iterator for HostsMut<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.hosts
             .as_mut()
-            .and_then(|hosts| hosts.next())
+            .and_then(Iterator::next)
             .map(|(_, host)| {
                 host.as_mapping_mut()
                     .ok_or_else(|| Error::ExpectedOtherType("host".to_string()))

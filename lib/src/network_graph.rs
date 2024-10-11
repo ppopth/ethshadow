@@ -36,7 +36,7 @@ impl SimpleNetworkGraph<'_> {
         let mut gml = String::new();
         let mut gml_builder = Gml::new(&mut gml, true)?;
         for location_name in config.locations.keys() {
-            for (reliability_name, reliability) in config.reliabilities.iter() {
+            for (reliability_name, reliability) in &config.reliabilities {
                 let node = gml_builder.add_node(
                     &reliability.bandwidth_up,
                     &reliability.bandwidth_down,
@@ -49,12 +49,12 @@ impl SimpleNetworkGraph<'_> {
                     .insert(reliability_name, node);
             }
         }
-        for (src_location_name, src_location) in config.locations.iter() {
-            for (src_reliability_name, src_reliability) in config.reliabilities.iter() {
+        for (src_location_name, src_location) in &config.locations {
+            for (src_reliability_name, src_reliability) in &config.reliabilities {
                 let src_node =
                     network_graph.get_network_node(src_location_name, src_reliability_name)?;
                 for dest_location_name in config.locations.keys() {
-                    for (dest_reliability_name, dest_reliability) in config.reliabilities.iter() {
+                    for (dest_reliability_name, dest_reliability) in &config.reliabilities {
                         let dest_node = network_graph
                             .get_network_node(dest_location_name, dest_reliability_name)?;
                         let mut latency = src_location
@@ -89,7 +89,7 @@ impl SimpleNetworkGraph<'_> {
                                 "{src_location_name}-{src_reliability_name} to \
                                 {dest_location_name}-{dest_reliability_name}"
                             )),
-                        )?
+                        )?;
                     }
                 }
             }

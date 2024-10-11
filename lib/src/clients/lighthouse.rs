@@ -22,7 +22,7 @@ impl Default for Lighthouse {
     fn default() -> Self {
         Self {
             executable: "lighthouse".into(),
-            extra_args: "".into(),
+            extra_args: String::new(),
             lower_target_peers: true,
         }
     }

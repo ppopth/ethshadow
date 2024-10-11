@@ -78,7 +78,7 @@ impl Client for Prometheus {
                 dir.to_str().ok_or(Error::NonUTF8Path)?,
                 config_file.to_str().ok_or(Error::NonUTF8Path)?,
             ),
-            environment: Default::default(),
+            environment: HashMap::default(),
             expected_final_state: "running".into(),
             start_time: "10s".into(),
         })

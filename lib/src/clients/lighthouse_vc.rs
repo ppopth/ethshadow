@@ -14,7 +14,7 @@ use std::fs::create_dir;
 #[serde(default)]
 pub struct LighthouseValidatorClient {
     pub executable: CowStr,
-    pub validators: Option<u64>,
+    pub validators: Option<usize>,
 }
 
 impl Default for LighthouseValidatorClient {

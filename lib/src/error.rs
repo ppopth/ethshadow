@@ -31,7 +31,7 @@ pub enum Error {
     #[error("Unknown client \"{0}\"")]
     UnknownClient(String),
     #[error("You have specified {0} total validators, but VCs have requested {1}")]
-    MoreValidatorsRequested(u64, u64),
+    MoreValidatorsRequested(usize, usize),
     #[error(
         "You have configured all validator clients to take a specific number of validators \
             and it disagrees with the configured total number of validators"
@@ -41,7 +41,7 @@ pub enum Error {
         "The specified number of nodes ({0}) must be divisible by the number of possible \
                 combinations ({1})"
     )]
-    InconsistentCount(u64, u64),
+    InconsistentCount(usize, usize),
     #[error("Missing env var: {0}")]
     MissingEnvVar(#[from] VarError),
     #[error("Output data folder already exists")]

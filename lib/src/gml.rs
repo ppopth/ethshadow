@@ -80,7 +80,7 @@ impl<W: Write> Drop for Gml<W> {
 }
 
 impl NetworkNode {
-    pub fn id(&self) -> u64 {
+    pub fn id(self) -> u64 {
         self.id
     }
 }

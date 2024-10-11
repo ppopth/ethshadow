@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::clients::Client;
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
@@ -32,7 +33,7 @@ impl Client for Blobssss {
                 self.private_key,
                 ctx.el_http_endpoints().iter().join(","),
             ),
-            environment: Default::default(),
+            environment: HashMap::default(),
             expected_final_state: "running".into(),
             start_time: self.start_time.clone().into(),
         })

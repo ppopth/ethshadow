@@ -24,7 +24,7 @@ pub struct EthShadowConfig {
     nodes: Vec<SugaredNode>,
     pub locations: HashMap<CowStr, Location>,
     pub reliabilities: HashMap<CowStr, Reliability>,
-    pub validators: Option<u64>,
+    pub validators: Option<usize>,
     pub clients: HashMap<CowStr, Box<dyn Client>>,
     #[serde(default = "default_clients")]
     pub default_clients: HashMap<CowStr, CowStr>,
@@ -36,7 +36,7 @@ pub struct EthShadowConfig {
 #[derive(Deserialize, Clone, Debug)]
 #[serde(untagged)]
 enum NodeConfig {
-    Simple(u64),
+    Simple(usize),
     Detailed(Vec<SugaredNode>),
 }
 
@@ -83,17 +83,17 @@ struct SugaredNode {
 }
 
 impl SugaredNode {
-    fn combinations(&self) -> u64 {
-        self.locations.len() as u64
-            * self.reliabilities.len() as u64
+    fn combinations(&self) -> usize {
+        self.locations.len()
+            * self.reliabilities.len()
             * self
                 .clients
                 .values()
-                .map(|clients| clients.len())
-                .product::<usize>() as u64
+                .map(OneOrMany::len)
+                .product::<usize>()
     }
 
-    fn count_per_combination(&self) -> Result<u64, Error> {
+    fn count_per_combination(&self) -> Result<usize, Error> {
         match self.count {
             NodeCount::CountPerCombination(count) => Ok(count),
             NodeCount::TotalCount(count) => {
@@ -110,9 +110,9 @@ impl SugaredNode {
 #[derive(Deserialize, Clone, Copy, Debug)]
 enum NodeCount {
     #[serde(rename = "per_combination")]
-    CountPerCombination(u64),
+    CountPerCombination(usize),
     #[serde(rename = "total")]
-    TotalCount(u64),
+    TotalCount(usize),
 }
 
 impl Default for NodeCount {
@@ -400,7 +400,7 @@ impl EthShadowConfig {
                             .map(|client| {
                                 self.clients
                                     .get(client.as_str())
-                                    .map(|b| b.as_ref())
+                                    .map(AsRef::as_ref)
                                     .ok_or_else(|| Error::UnknownClient(client.clone()))
                             })
                             .try_collect()
@@ -445,7 +445,7 @@ pub struct Node<'a> {
     pub location: &'a str,
     pub reliability: &'a str,
     pub clients: Vec<&'a dyn Client>,
-    pub count: u64,
+    pub count: usize,
     pub tag: Option<&'a str>,
 }
 

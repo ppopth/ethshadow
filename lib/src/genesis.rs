@@ -61,13 +61,13 @@ pub fn write_config(
     export(
         file,
         "ELECTRA_FORK_EPOCH",
-        genesis.electra_epoch.unwrap_or(9999999),
+        genesis.electra_epoch.unwrap_or(9_999_999),
     )?;
     export(file, "EIP7594_FORK_VERSION", "0x70000000")?;
     export(
         file,
         "EIP7594_FORK_EPOCH",
-        genesis.eip7594_epoch.unwrap_or(99999999),
+        genesis.eip7594_epoch.unwrap_or(99_999_999),
     )?;
     export(file, "WITHDRAWAL_TYPE", "0x01")?;
     export(
@@ -80,7 +80,7 @@ pub fn write_config(
     export(
         file,
         "GENESIS_GASLIMIT",
-        genesis.gaslimit.unwrap_or(25000000),
+        genesis.gaslimit.unwrap_or(25_000_000),
     )?;
     export_optional(
         file,

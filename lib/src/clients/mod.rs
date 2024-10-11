@@ -26,7 +26,7 @@ pub enum ValidatorDemand {
     Any,
     /// We want validators, and the slice will have exactly this amount of elements. Generation
     /// fails if we can not satisfy this.
-    Count(u64),
+    Count(usize),
 }
 
 #[typetag::deserialize(tag = "type")]
