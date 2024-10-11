@@ -113,12 +113,19 @@ fn generate(
     mnemonic: &str,
     total_val: usize,
 ) -> Result<Vec<Validator>, Error> {
+    const BATCH_SIZE: usize = 4000;
     let mut validators = Vec::with_capacity(total_val);
     let mut idx = 0;
     let mut data_mount = output_path.as_os_str().to_owned();
     data_mount.push(":/data");
     while validators.len() < total_val {
-        info!("Generating validator batch {}", idx + 1);
+        if total_val > BATCH_SIZE {
+            info!(
+                "Generating validator batch {} of {}",
+                idx + 1,
+                total_val.div_ceil(BATCH_SIZE)
+            );
+        }
         let status = log_and_wait(
             Command::new("docker")
                 .args(["run", "--rm", "-i", "-u"])
@@ -136,7 +143,7 @@ fn generate(
                 .arg("--source-min")
                 .arg(validators.len().to_string())
                 .arg("--source-max")
-                .arg(min(validators.len() + 4000, total_val).to_string()),
+                .arg(min(validators.len() + BATCH_SIZE, total_val).to_string()),
         )?;
         if !status.success() {
             return Err(Error::ChildProcessFailure(image_name.to_string()));
