@@ -1,0 +1,9 @@
+[book]
+title = "The Ethshadow Documentation"
+authors = ["Daniel Knopik", "Pop Chunhapanya"]
+language = "en"
+multilingual = false
+src = "../docs"
+
+[output.html]
+git-repository-url = "https://github.com/ppopth/ethereum"
