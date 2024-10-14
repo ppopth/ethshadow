@@ -1,0 +1,12 @@
+general:
+  # How much time should we simulate?
+  stop_time: 10 min
+  # Display a progress indicator?
+  progress: true
+
+ethereum:
+  # Distribute this many validators evenly across all nodes
+  validators: 30
+  # Create this many nodes with Geth, Lighthouse and a Validator client.
+  # Additionally, a host with one boot node for CL and EL each is added.
+  nodes: 10
