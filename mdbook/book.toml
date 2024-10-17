@@ -6,4 +6,4 @@ multilingual = false
 src = "../docs"
 
 [output.html]
-git-repository-url = "https://github.com/ppopth/ethereum"
+git-repository-url = "https://github.com/ethereum/ethshadow"
