@@ -122,4 +122,4 @@ features might not work.
 
 ## More Information
 
-See https://ppopth.github.io/ethshadow for the documentation
+See https://ethereum.github.io/ethshadow for the documentation
