@@ -4,7 +4,6 @@ use crate::network_graph::{generate_network_graph, GeneratedNetworkGraph};
 use crate::node::NodeManager;
 use crate::validators::ValidatorManager;
 use log::{debug, info};
-use serde_yaml::Value;
 use std::borrow::Cow;
 use std::ffi::{OsStr, OsString};
 use std::fs::{create_dir, File};
@@ -110,15 +109,22 @@ pub fn generate<T: TryInto<FullConfig, Error = Error>>(
 
     // postprocessing given shadow config values: overwrite string network ids
     for host in shadow_config.hosts_mut()? {
-        if let Some(node_id) = host?.network_node_id_mut() {
-            if let Some((location, reliability)) = node_id.as_str().and_then(|s| s.split_once('-'))
-            {
-                let node = network_graph.assign_network_node(location, reliability)?;
-                *node_id = Value::Number(node.id().into());
-            } else {
-                return Err(Error::ExpectedOtherType("network_node_id".to_string()));
-            }
+        let mapping = host?;
+        if mapping.get("network_node_id").is_some() {
+            return Err(Error::InvalidShadowHost);
         }
+        let location = mapping
+            .get("location")
+            .ok_or(Error::InvalidShadowHost)?
+            .as_str()
+            .ok_or_else(|| Error::ExpectedOtherType("location".to_string()))?;
+        let reliability = mapping
+            .get("reliability")
+            .ok_or(Error::InvalidShadowHost)?
+            .as_str()
+            .ok_or_else(|| Error::ExpectedOtherType("reliability".to_string()))?;
+        let node = network_graph.assign_network_node(location, reliability)?;
+        mapping.insert("network_node_id".into(), node.id().into());
     }
 
     info!("Generating nodes");
