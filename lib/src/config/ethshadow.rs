@@ -86,11 +86,7 @@ impl SugaredNode {
     fn combinations(&self) -> usize {
         self.locations.len()
             * self.reliabilities.len()
-            * self
-                .clients
-                .values()
-                .map(OneOrMany::len)
-                .product::<usize>()
+            * self.clients.values().map(OneOrMany::len).product::<usize>()
     }
 
     fn count_per_combination(&self) -> Result<usize, Error> {

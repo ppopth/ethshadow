@@ -56,7 +56,7 @@ impl Client for GethBootnode {
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),
-            start_time: "0s".into()
+            start_time: "0s".into(),
         })
     }
 }

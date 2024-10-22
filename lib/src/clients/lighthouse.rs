@@ -66,7 +66,8 @@ impl Client for Lighthouse {
             ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
             ctx.jwt_path().to_str().ok_or(Error::NonUTF8Path)?,
             ctx.cl_bootnode_enrs().join(","),
-            self.common.arguments("--disable-quic --disable-upnp --disable-packet-filter"),
+            self.common
+                .arguments("--disable-quic --disable-upnp --disable-packet-filter"),
         );
         if self.lower_target_peers && ctx.num_cl_clients() <= 100 {
             args.push_str(&format!("--target-peers {}", ctx.num_cl_clients() - 1));
