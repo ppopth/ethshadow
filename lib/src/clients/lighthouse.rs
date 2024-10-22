@@ -1,9 +1,9 @@
 use crate::clients::Client;
+use crate::clients::CommonArgs;
 use crate::clients::{BEACON_API_PORT, CL_PROMETHEUS_PORT, ENGINE_API_PORT};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
-use crate::CowStr;
 use crate::Error;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -13,16 +13,15 @@ const PORT: &str = "31000";
 #[derive(Deserialize, Debug, Clone)]
 #[serde(default)]
 pub struct Lighthouse {
-    pub executable: CowStr,
-    pub extra_args: String,
+    #[serde(flatten)]
+    pub common: CommonArgs,
     pub lower_target_peers: bool,
 }
 
 impl Default for Lighthouse {
     fn default() -> Self {
         Self {
-            executable: "lighthouse".into(),
-            extra_args: String::new(),
+            common: CommonArgs::default(),
             lower_target_peers: true,
         }
     }
@@ -66,19 +65,18 @@ impl Client for Lighthouse {
                 --disable-packet-filter \
                 --metrics-address 0.0.0.0 \
                 --metrics-port {CL_PROMETHEUS_PORT} \
-                --metrics \
-                {} ",
+                --metrics {}",
             ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
             ctx.jwt_path().to_str().ok_or(Error::NonUTF8Path)?,
             ctx.cl_bootnode_enrs().join(","),
-            self.extra_args,
+            self.common.extra_args,
         );
         if self.lower_target_peers && ctx.num_cl_clients() <= 100 {
             args.push_str(&format!("--target-peers {}", ctx.num_cl_clients() - 1));
         }
 
         Ok(Process {
-            path: self.executable.clone(),
+            path: self.common.executable_or("lighthouse"),
             args,
             environment: HashMap::new(),
             expected_final_state: "running".into(),

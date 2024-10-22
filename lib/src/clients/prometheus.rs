@@ -1,26 +1,19 @@
 use crate::clients::Client;
+use crate::clients::CommonArgs;
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
-use crate::CowStr;
 use crate::Error;
 use serde::{Deserialize, Serialize};
 use serde_yaml::to_writer;
 use std::collections::HashMap;
 use std::fs::File;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct Prometheus {
-    executable: CowStr,
-}
-
-impl Default for Prometheus {
-    fn default() -> Self {
-        Self {
-            executable: "prometheus".into(),
-        }
-    }
+    #[serde(flatten)]
+    common: CommonArgs,
 }
 
 #[derive(Serialize)]
@@ -72,11 +65,12 @@ impl Client for Prometheus {
         to_writer(File::create_new(&config_file)?, &config)?;
 
         Ok(Process {
-            path: self.executable.clone(),
+            path: self.common.executable_or("prometheus"),
             args: format!(
-                "--storage.tsdb.path={} --config.file={}",
+                "--storage.tsdb.path={} --config.file={} {}",
                 dir.to_str().ok_or(Error::NonUTF8Path)?,
                 config_file.to_str().ok_or(Error::NonUTF8Path)?,
+                self.common.extra_args,
             ),
             environment: HashMap::default(),
             expected_final_state: "running".into(),

@@ -1,7 +1,9 @@
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
+use crate::CowStr;
 use crate::Error;
+use serde::Deserialize;
 use std::fmt::Debug;
 
 const ENGINE_API_PORT: &str = "21001";
@@ -47,5 +49,22 @@ pub trait Client: Debug {
     }
     fn is_el_client(&self) -> bool {
         false
+    }
+}
+
+#[derive(Deserialize, Debug, Clone, Default)]
+#[serde(default)]
+pub struct CommonArgs {
+    pub executable: String,
+    pub extra_args: String,
+}
+
+impl CommonArgs {
+    pub fn executable_or(&self, default: &'static str) -> CowStr {
+        if self.executable.is_empty() {
+            default.into()
+        } else {
+            self.executable.clone().into()
+        }
     }
 }
