@@ -1,5 +1,5 @@
 use crate::clients::Client;
-use crate::clients::CommonArgs;
+use crate::clients::CommonParams;
 use crate::clients::{BEACON_API_PORT, CL_PROMETHEUS_PORT, ENGINE_API_PORT};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
@@ -14,14 +14,14 @@ const PORT: &str = "31000";
 #[serde(default)]
 pub struct Lighthouse {
     #[serde(flatten)]
-    pub common: CommonArgs,
+    pub common: CommonParams,
     pub lower_target_peers: bool,
 }
 
 impl Default for Lighthouse {
     fn default() -> Self {
         Self {
-            common: CommonArgs::default(),
+            common: CommonParams::default(),
             lower_target_peers: true,
         }
     }
@@ -60,16 +60,13 @@ impl Client for Lighthouse {
                 --enr-tcp-port {PORT} \
                 --http \
                 --http-port {BEACON_API_PORT} \
-                --disable-quic \
-                --disable-upnp \
-                --disable-packet-filter \
                 --metrics-address 0.0.0.0 \
                 --metrics-port {CL_PROMETHEUS_PORT} \
                 --metrics {}",
             ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
             ctx.jwt_path().to_str().ok_or(Error::NonUTF8Path)?,
             ctx.cl_bootnode_enrs().join(","),
-            self.common.extra_args,
+            self.common.arguments("--disable-quic --disable-upnp --disable-packet-filter"),
         );
         if self.lower_target_peers && ctx.num_cl_clients() <= 100 {
             args.push_str(&format!("--target-peers {}", ctx.num_cl_clients() - 1));

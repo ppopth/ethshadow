@@ -1,5 +1,5 @@
 use crate::clients::Client;
-use crate::clients::CommonArgs;
+use crate::clients::CommonParams;
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
@@ -13,7 +13,7 @@ use std::fs::File;
 #[serde(default)]
 pub struct Prometheus {
     #[serde(flatten)]
-    common: CommonArgs,
+    common: CommonParams,
 }
 
 #[derive(Serialize)]
@@ -70,7 +70,7 @@ impl Client for Prometheus {
                 "--storage.tsdb.path={} --config.file={} {}",
                 dir.to_str().ok_or(Error::NonUTF8Path)?,
                 config_file.to_str().ok_or(Error::NonUTF8Path)?,
-                self.common.extra_args,
+                self.common.arguments(""),
             ),
             environment: HashMap::default(),
             expected_final_state: "running".into(),

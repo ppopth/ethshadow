@@ -1,4 +1,4 @@
-use crate::clients::CommonArgs;
+use crate::clients::CommonParams;
 use std::collections::HashMap;
 use std::fs::{create_dir, File};
 use std::io::Write;
@@ -17,7 +17,7 @@ const DISC_PORT: u16 = 30305;
 #[serde(default)]
 pub struct GethBootnode {
     #[serde(flatten)]
-    pub common: CommonArgs,
+    pub common: CommonParams,
 }
 
 #[typetag::deserialize(name = "geth_bootnode")]
@@ -50,10 +50,9 @@ impl Client for GethBootnode {
             path: self.common.executable_or("bootnode"),
             args: format!(
                 "-nodekey \"{key_file}\" \
-                -verbosity 5 \
                 -addr :{DISC_PORT} \
                 -nat extip:{ip} {}",
-                self.common.extra_args,
+                self.common.arguments("-verbosity 5"),
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),

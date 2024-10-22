@@ -1,5 +1,5 @@
 use crate::clients::Client;
-use crate::clients::CommonArgs;
+use crate::clients::CommonParams;
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
@@ -11,7 +11,7 @@ use std::collections::HashMap;
 #[derive(Deserialize, Debug, Clone)]
 pub struct Blobssss {
     #[serde(flatten)]
-    pub common: CommonArgs,
+    pub common: CommonParams,
     pub private_key: String,
     pub min_per_slot: u8,
     pub max_per_slot: u8,
@@ -34,7 +34,7 @@ impl Client for Blobssss {
                 self.max_per_slot,
                 self.private_key,
                 ctx.el_http_endpoints().iter().join(","),
-                self.common.extra_args,
+                self.common.arguments(""),
             ),
             environment: HashMap::default(),
             expected_final_state: "running".into(),

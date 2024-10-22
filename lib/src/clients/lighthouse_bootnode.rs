@@ -1,4 +1,4 @@
-use crate::clients::CommonArgs;
+use crate::clients::CommonParams;
 use log::debug;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -18,14 +18,14 @@ const PORT: &str = "4011";
 #[serde(default)]
 pub struct LighthouseBootnode {
     #[serde(flatten)]
-    pub common: CommonArgs,
+    pub common: CommonParams,
     pub lcli_executable: CowStr,
 }
 
 impl Default for LighthouseBootnode {
     fn default() -> Self {
         Self {
-            common: CommonArgs::default(),
+            common: CommonParams::default(),
             lcli_executable: "lcli".into(),
         }
     }
@@ -73,11 +73,10 @@ impl Client for LighthouseBootnode {
                 "--testnet-dir \"{}\" \
                 boot_node \
                 --port {PORT} \
-                --disable-packet-filter \
                 --network-dir {} {}",
                 ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
                 dir.to_str().ok_or(Error::NonUTF8Path)?,
-                self.common.extra_args,
+                self.common.arguments("--disable-packet-filter"),
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),

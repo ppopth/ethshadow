@@ -52,19 +52,38 @@ pub trait Client: Debug {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, Default)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(default)]
-pub struct CommonArgs {
+pub struct CommonParams {
     pub executable: String,
     pub extra_args: String,
+    pub use_recommended_args: bool,
 }
 
-impl CommonArgs {
+impl Default for CommonParams {
+    fn default() -> Self {
+        CommonParams {
+            executable: String::new(),
+            extra_args: String::new(),
+            use_recommended_args: true,
+        }
+    }
+}
+
+impl CommonParams {
     pub fn executable_or(&self, default: &'static str) -> CowStr {
         if self.executable.is_empty() {
             default.into()
         } else {
             self.executable.clone().into()
+        }
+    }
+
+    pub fn arguments(&self, recommended: &'static str) -> String {
+        if self.use_recommended_args && !recommended.is_empty() {
+            format!("{} {}", recommended, self.extra_args)
+        } else {
+            self.extra_args.clone()
         }
     }
 }

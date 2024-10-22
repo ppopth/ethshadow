@@ -1,4 +1,4 @@
-use crate::clients::CommonArgs;
+use crate::clients::CommonParams;
 use crate::clients::ENGINE_API_PORT;
 use crate::clients::{Client, JSON_RPC_PORT};
 use crate::config::shadow::Process;
@@ -14,7 +14,7 @@ const PORT: &str = "21000";
 #[serde(default)]
 pub struct Reth {
     #[serde(flatten)]
-    pub common: CommonArgs,
+    pub common: CommonParams,
 }
 
 #[typetag::deserialize(name = "reth")]
@@ -48,12 +48,11 @@ impl Client for Reth {
                 --port {PORT} \
                 --bootnodes {} \
                 --nat extip:{} \
-                --ipcdisable \
                 --log.file.directory {dir} {}",
                 ctx.jwt_path().to_str().ok_or(Error::NonUTF8Path)?,
                 ctx.el_bootnode_enodes().join(","),
                 node.ip(),
-                self.common.extra_args,
+                self.common.arguments("--ipcdisable"),
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),

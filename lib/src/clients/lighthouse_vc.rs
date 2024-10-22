@@ -1,4 +1,4 @@
-use crate::clients::CommonArgs;
+use crate::clients::CommonParams;
 use crate::clients::BEACON_API_PORT;
 use crate::clients::{Client, ValidatorDemand};
 use crate::config::shadow::Process;
@@ -14,7 +14,7 @@ use std::fs::create_dir;
 #[serde(default)]
 pub struct LighthouseValidatorClient {
     #[serde(flatten)]
-    pub common: CommonArgs,
+    pub common: CommonParams,
     pub validators: Option<usize>,
 }
 
@@ -60,10 +60,11 @@ impl Client for LighthouseValidatorClient {
                 validator_client \
                 --datadir \"{dir_str}\" \
                 --beacon-nodes http://localhost:{BEACON_API_PORT} \
-                --suggested-fee-recipient 0xf97e180c050e5Ab072211Ad2C213Eb5AEE4DF134 \
                 --init-slashing-protection {}",
                 ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
-                self.common.extra_args,
+                self.common.arguments(
+                    "--suggested-fee-recipient 0xf97e180c050e5Ab072211Ad2C213Eb5AEE4DF134"
+                ),
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),
