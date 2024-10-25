@@ -36,7 +36,7 @@ invoke:
 ethshadow myfirstsim.yaml
 ```
 
-The first run might take a moment, as Docker will have to pull an image. After some time, `Startin Shadow 3.2.0` will
+The first run might take a moment, as Docker will have to pull an image. After some time, `Starting Shadow 3.2.0` will 
 be logged, and the simulation will begin. Notice how the Simulation will run at variable speed: it will likely hang
 for a moment at `00:00:04.999`, because all nodes start after giving the boot node five seconds to prepare. As genesis o
 ccurs at `00:05:00.000`, time will pass relatively quickly until then, as nodes only search for peers and wait for
@@ -79,8 +79,8 @@ ethereum:
         per_combination: 5
 ```
 
-As you can see, we replaced the simple node count with a list of node specifications. Here, the yaml list has tow
-items.
+As you can see, we replaced the simple node count with a list of node specifications. Here, the yaml list has two
+items. 
 
 In the first one, we define a host located in europe, with a reliable internet connection. We also specify that
 a Geth bootnode and a Lighthouse bootnode shall be run on that node.
