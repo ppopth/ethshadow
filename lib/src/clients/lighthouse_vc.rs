@@ -1,29 +1,21 @@
+use crate::clients::CommonParams;
 use crate::clients::BEACON_API_PORT;
 use crate::clients::{Client, ValidatorDemand};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
-use crate::CowStr;
 use crate::Error;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::create_dir;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct LighthouseValidatorClient {
-    pub executable: CowStr,
+    #[serde(flatten)]
+    pub common: CommonParams,
     pub validators: Option<usize>,
-}
-
-impl Default for LighthouseValidatorClient {
-    fn default() -> Self {
-        Self {
-            executable: "lighthouse".into(),
-            validators: None,
-        }
-    }
 }
 
 #[typetag::deserialize(name = "lighthouse_vc")]
@@ -62,15 +54,17 @@ impl Client for LighthouseValidatorClient {
         }
 
         Ok(Process {
-            path: self.executable.clone(),
+            path: self.common.executable_or("lighthouse"),
             args: format!(
                 "--testnet-dir \"{}\" \
                 validator_client \
                 --datadir \"{dir_str}\" \
                 --beacon-nodes http://localhost:{BEACON_API_PORT} \
-                --suggested-fee-recipient 0xf97e180c050e5Ab072211Ad2C213Eb5AEE4DF134 \
-                --init-slashing-protection",
+                --init-slashing-protection {}",
                 ctx.metadata_path().to_str().ok_or(Error::NonUTF8Path)?,
+                self.common.arguments(
+                    "--suggested-fee-recipient 0xf97e180c050e5Ab072211Ad2C213Eb5AEE4DF134"
+                ),
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),

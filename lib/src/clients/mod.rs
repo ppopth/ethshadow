@@ -1,7 +1,9 @@
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::validators::Validator;
+use crate::CowStr;
 use crate::Error;
+use serde::Deserialize;
 use std::fmt::Debug;
 
 const ENGINE_API_PORT: &str = "21001";
@@ -47,5 +49,41 @@ pub trait Client: Debug {
     }
     fn is_el_client(&self) -> bool {
         false
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(default)]
+pub struct CommonParams {
+    pub executable: String,
+    pub extra_args: String,
+    pub use_recommended_args: bool,
+}
+
+impl Default for CommonParams {
+    fn default() -> Self {
+        CommonParams {
+            executable: String::new(),
+            extra_args: String::new(),
+            use_recommended_args: true,
+        }
+    }
+}
+
+impl CommonParams {
+    pub fn executable_or(&self, default: &'static str) -> CowStr {
+        if self.executable.is_empty() {
+            default.into()
+        } else {
+            self.executable.clone().into()
+        }
+    }
+
+    pub fn arguments(&self, recommended: &'static str) -> String {
+        if self.use_recommended_args && !recommended.is_empty() {
+            format!("{} {}", recommended, self.extra_args)
+        } else {
+            self.extra_args.clone()
+        }
     }
 }

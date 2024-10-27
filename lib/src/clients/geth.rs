@@ -1,10 +1,10 @@
+use crate::clients::CommonParams;
 use crate::clients::ENGINE_API_PORT;
 use crate::clients::{Client, JSON_RPC_PORT};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::utils::log_and_wait;
 use crate::validators::Validator;
-use crate::CowStr;
 use crate::Error;
 use log::debug;
 use serde::Deserialize;
@@ -13,18 +13,11 @@ use std::process::Command;
 
 const PORT: &str = "21000";
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct Geth {
-    pub executable: CowStr,
-}
-
-impl Default for Geth {
-    fn default() -> Self {
-        Self {
-            executable: "geth".into(),
-        }
-    }
+    #[serde(flatten)]
+    pub common: CommonParams,
 }
 
 #[typetag::deserialize(name = "geth")]
@@ -41,9 +34,11 @@ impl Client for Geth {
         let dir = node.dir().join("geth");
         let dir = dir.to_str().ok_or(Error::NonUTF8Path)?;
 
+        let executable = self.common.executable_or("geth");
+
         debug!("Calling geth init");
         let status = log_and_wait(
-            Command::new(self.executable.as_ref())
+            Command::new(executable.as_ref())
                 .arg("init")
                 .arg("--datadir")
                 .arg(dir)
@@ -56,7 +51,7 @@ impl Client for Geth {
         ctx.add_el_http_endpoint(format!("http://{}:{JSON_RPC_PORT}", node.ip()));
 
         Ok(Process {
-            path: self.executable.clone(),
+            path: executable,
             args: format!(
                 "--datadir {dir} \
                 --authrpc.port {ENGINE_API_PORT} \
@@ -68,12 +63,11 @@ impl Client for Geth {
                 --port {PORT} \
                 --bootnodes {} \
                 --nat extip:{} \
-                --ipcdisable \
-                --log.file {dir}/geth.log \
-                --syncmode full",
+                --log.file {dir}/geth.log {}",
                 ctx.jwt_path().to_str().ok_or(Error::NonUTF8Path)?,
                 ctx.el_bootnode_enodes().join(","),
                 node.ip(),
+                self.common.arguments("--syncmode full --ipcdisable"),
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),
