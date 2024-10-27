@@ -51,4 +51,8 @@ pub enum Error {
             validator client"
     )]
     MissingValidatorCount,
+    #[error(
+        "You must specify a reliability and location, and no network_node_id in your custom hosts"
+    )]
+    InvalidShadowHost,
 }
