@@ -99,24 +99,24 @@ features might not work.
 
 | Name                         | Node | Boot Node | Latest tested version |
 |------------------------------|:----:|:---------:|:---------------------:|
-| Besu                         |  ❔   |     ❔     |                       |
-| Erigon                       |  ❔   |     ❔     |                       |
-| EthereumJS                   |  ❔   |     ❔     |                       |
-| [Geth](docs/clients/geth.md) |  ✅   |     ✅     | v1.14.11              |
-| Nethermind                   |  ❔   |     ❔     |                       |
-| Reth                         |  🚧  |     ❔     |                       |
+| Besu                         |  ❌  |     ❔    |                       |
+| Erigon                       |  ❔  |     ❔    |                       |
+| EthereumJS                   |  ❔  |     ❔    |                       |
+| [Geth](docs/clients/geth.md) |  ✅  |     ✅    | v1.14.11              |
+| Nethermind                   |  ❌  |     ❔    |                       |
+| Reth                         |  🚧  |     ❔    |                       |
 
 
 ### Consensus Layer
 
 | Name                                     | Node | Boot Node | Validator Client | Latest tested version |
 |------------------------------------------|:----:|:---------:|:----------------:|:---------------------:|
-| Grandine                                 |  ❔   |     ❔     |        ❔         |                       |
-| [Lighthouse](docs/clients/lighthouse.md) |  ✅   |     ✅     |        ✅         | v5.3.0                |
-| Lodestar                                 |  ❔   |     ❔     |        ❔         |                       |
-| Nimbus                                   |  ❔   |     ❔     |        ❔         |                       |
-| Prysm                                    |  ❔   |     ❔     |        ❔         |                       |
-| Teku                                     |  ❔   |     ❔     |        ❔         |                       |
+| Grandine                                 |  ❔  |    ❔     |        ❔        |                       |
+| [Lighthouse](docs/clients/lighthouse.md) |  ✅  |    ✅     |        ✅        |        v5.3.0         |
+| Lodestar                                 |  ❔  |    ❔     |        ❔        |                       |
+| Nimbus                                   |  ❔  |    ❔     |        ❔        |                       |
+| Prysm                                    |  ❌  |    ❔     |        ❔        |                       |
+| Teku                                     |  ❌  |    ❔     |        ❔        |                       |
 
 <!--- ANCHOR_END: supported-clients (for mdbook) -->
 
