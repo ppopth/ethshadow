@@ -1,10 +1,3 @@
-#!/usr/bin/env rust-script
-//! ```cargo
-//! [dependencies]
-//! ethshadow = { path="lib" }
-//! clap = { version = "4.5", features = ["cargo"] }
-//! ```
-
 use clap::{arg, command, value_parser};
 use color_eyre::eyre::WrapErr;
 use color_eyre::Result;
@@ -16,7 +9,7 @@ use std::os::unix::prelude::CommandExt;
 use std::path::PathBuf;
 
 fn main() -> Result<()> {
-    let matches = command!() // requires `cargo` feature
+    let matches = command!()
         .bin_name("ethshadow")
         .arg(arg!(dir: -d [DIR] "Output directory for ethshadow and Shadow")
             .value_parser(value_parser!(PathBuf))
