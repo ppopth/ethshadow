@@ -52,6 +52,8 @@ echo 'export PATH="${PATH}:/home/${USER}/.local/bin"' >> ~/.bashrc && source ~/.
 
 Install Ethshadow.
 ```sh
+git clone https://github.com/ethereum/ethshadow.git
+cd ethshadow
 cargo install --path .
 ```
 
