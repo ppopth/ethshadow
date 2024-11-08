@@ -11,5 +11,4 @@
   - [Customize Client Settings](advanced/client-settings.md)
   - [Large Simulations](advanced/large-sims.md)
   - [Capture Metrics](advanced/metrics.md)
-  - [Custom Hosts](advanced/custom-hosts.md)
 - [Limitations]()
