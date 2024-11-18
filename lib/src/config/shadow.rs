@@ -129,7 +129,7 @@ pub struct HostsMut<'a> {
 }
 
 impl<'a> Iterator for HostsMut<'a> {
-    type Item = Result<UntypedHost<&'a mut Mapping>, Error>;
+    type Item = Result<&'a mut Mapping, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.hosts
@@ -138,15 +138,6 @@ impl<'a> Iterator for HostsMut<'a> {
             .map(|(_, host)| {
                 host.as_mapping_mut()
                     .ok_or_else(|| Error::ExpectedOtherType("host".to_string()))
-                    .map(UntypedHost)
             })
-    }
-}
-
-pub struct UntypedHost<T>(T);
-
-impl<'a> UntypedHost<&'a mut Mapping> {
-    pub fn network_node_id_mut(&mut self) -> Option<&mut Value> {
-        self.0.get_mut("network_node_id")
     }
 }

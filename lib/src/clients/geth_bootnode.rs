@@ -1,3 +1,4 @@
+use crate::clients::CommonParams;
 use std::collections::HashMap;
 use std::fs::{create_dir, File};
 use std::io::Write;
@@ -8,23 +9,15 @@ use serde::Deserialize;
 use crate::clients::{Client, Validator};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
-use crate::CowStr;
 use crate::Error;
 
 const DISC_PORT: u16 = 30305;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GethBootnode {
-    pub executable: CowStr,
-}
-
-impl Default for GethBootnode {
-    fn default() -> Self {
-        Self {
-            executable: "bootnode".into(),
-        }
-    }
+    #[serde(flatten)]
+    pub common: CommonParams,
 }
 
 #[typetag::deserialize(name = "geth_bootnode")]
@@ -54,12 +47,12 @@ impl Client for GethBootnode {
         ctx.add_el_bootnode_enode(format!("enode://{pub_key}@{ip}:0?discport={DISC_PORT}"));
 
         Ok(Process {
-            path: self.executable.clone(),
+            path: self.common.executable_or("bootnode"),
             args: format!(
                 "-nodekey \"{key_file}\" \
-                -verbosity 5 \
                 -addr :{DISC_PORT} \
-                -nat extip:{ip}"
+                -nat extip:{ip} {}",
+                self.common.arguments("-verbosity 5"),
             ),
             environment: HashMap::new(),
             expected_final_state: "running".into(),

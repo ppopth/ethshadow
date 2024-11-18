@@ -10,10 +10,10 @@ The advantages of using Ethshadow are as follows.
 
 1. It already includes everything in the simulation (e.g. libp2p, discv5, etc).
 2. It uses the same software as the mainnet and the public testnets.
-3. If there is any upgades in lighthouse, we can integrate those upgrades easily in the simulation.
+3. If there is any upgades in the supported clients, we can integrate those upgrades easily in the simulation.
 
-If you want to simulate a new Ethereum protocol, what you need to do is just to implement it in lighthouse or geth or
-any other supported EL and CL clients and run it using this simulator.
+If you want to simulate a new Ethereum protocol, what you need to do is just to implement it in supported clients and
+run it using this simulator.
 
 <!--- ANCHOR_END: overview (for mdbook) -->
 
@@ -52,6 +52,8 @@ echo 'export PATH="${PATH}:/home/${USER}/.local/bin"' >> ~/.bashrc && source ~/.
 
 Install Ethshadow.
 ```sh
+git clone https://github.com/ethereum/ethshadow.git
+cd ethshadow
 cargo install --path .
 ```
 
@@ -77,7 +79,7 @@ Run the simulation.
 ethshadow myfirstsim.yaml
 ```
 
-Check out `./data/shadow/hosts` which contais the stdout and stderr of every process (including geth and lighthouse)
+Check out `./data/shadow/hosts` which contains the stdout and stderr of every process (including geth and lighthouse)
 of every node.
 
 ## Supported clients
