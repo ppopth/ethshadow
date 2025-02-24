@@ -117,9 +117,6 @@ impl ShadowConfig {
         experimental
             .entry("use_memory_manager".into())
             .or_insert(Value::Bool(true));
-        experimental
-            .entry("host_heartbeat_interval".into())
-            .or_insert_with(|| Value::String("1m".into()));
         Ok(())
     }
 }
