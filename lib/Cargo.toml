@@ -7,17 +7,17 @@ description.workspace = true
 authors.workspace = true
 
 [dependencies]
-serde_yaml = "0.9" # deprecated, but stable, and what shadow uses
-serde = { version = "1.0", features = ["derive"] }
-humantime-serde = "1.1"
-thiserror = "1.0"
-rand = "0.8.5"
-libsecp256k1 = "0.7.1"
-hex = "0.4.3"
-typetag = "0.2"
-itertools = "0.13"
-users = "0.11"
-log = "0.4"
+serde_yaml = { workspace = true } # deprecated, but stable, and what shadow uses
+serde = { workspace = true, features = ["derive"] }
+humantime-serde = { workspace = true }
+thiserror = { workspace = true }
+rand = { workspace = true }
+libsecp256k1 = { workspace = true }
+hex = { workspace = true }
+typetag = { workspace = true }
+itertools = { workspace = true }
+users = { workspace = true }
+log = { workspace = true }
 
 [dev-dependencies]
-tempfile = "3.13"
+tempfile = { workspace = true }
