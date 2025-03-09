@@ -4,6 +4,7 @@ use crate::clients::lighthouse::Lighthouse;
 use crate::clients::lighthouse_bootnode::LighthouseBootnode;
 use crate::clients::lighthouse_vc::LighthouseValidatorClient;
 use crate::clients::prometheus::Prometheus;
+use crate::clients::prysm::Prysm;
 use crate::clients::reth::Reth;
 use crate::clients::Client;
 use crate::config::one_or_many::OneOrMany;
@@ -142,6 +143,7 @@ pub struct Genesis {
     pub capella_epoch: Option<u64>,
     pub deneb_epoch: Option<u64>,
     pub electra_epoch: Option<u64>,
+    pub fulu_epoch: Option<u64>,
     pub eip7594_epoch: Option<u64>,
     pub withdrawal_address: Option<String>,
     pub delay: Option<u64>,
@@ -346,6 +348,7 @@ impl EthShadowConfig {
         self.add_builtin_client("lighthouse_bootnode", LighthouseBootnode::default());
         self.add_builtin_client("geth", Geth::default());
         self.add_builtin_client("reth", Reth::default());
+        self.add_builtin_client("prysm", Prysm::default());
         self.add_builtin_client("lighthouse", Lighthouse::default());
         self.add_builtin_client("lighthouse_vc", LighthouseValidatorClient::default());
         self.add_builtin_client("prometheus", Prometheus::default());
@@ -445,7 +448,7 @@ pub struct Node<'a> {
     pub tag: Option<&'a str>,
 }
 
-pub const DEFAULT_GENESIS_GEN_IMAGE: &str = "ethpandaops/ethereum-genesis-generator:3.3.7";
+pub const DEFAULT_GENESIS_GEN_IMAGE: &str = "ethpandaops/ethereum-genesis-generator:3.7.0";
 pub const DEFAULT_MNEMONIC: &str = "\
 iron oxygen will win \
 iron oxygen will win \

@@ -63,17 +63,26 @@ pub fn write_config(
         "ELECTRA_FORK_EPOCH",
         genesis.electra_epoch.unwrap_or(9_999_999),
     )?;
-    export(file, "EIP7594_FORK_VERSION", "0x70000000")?;
+    export(file, "FULU_FORK_VERSION", "0x70000000")?;
+    export(
+        file,
+        "FULU_FORK_EPOCH",
+        genesis.fulu_epoch.unwrap_or(9_999_999),
+    )?;
+    export(file, "EIP7594_FORK_VERSION", "0x80000000")?;
     export(
         file,
         "EIP7594_FORK_EPOCH",
         genesis.eip7594_epoch.unwrap_or(99_999_999),
     )?;
-    export(file, "WITHDRAWAL_TYPE", "0x01")?;
+    export(file, "WITHDRAWAL_TYPE", "0x00")?;
     export(
         file,
         "WITHDRAWAL_ADDRESS",
-        genesis.withdrawal_address.as_deref().unwrap_or(""),
+        genesis
+            .withdrawal_address
+            .as_deref()
+            .unwrap_or("0xf97e180c050e5Ab072211Ad2C213Eb5AEE4DF134"),
     )?;
     export(file, "GENESIS_TIMESTAMP", "946684800")?;
     export(file, "GENESIS_DELAY", genesis.delay.unwrap_or(300))?;

@@ -17,6 +17,8 @@ pub enum Error {
     NonUTF8Path,
     #[error("Child process \"{0}\" returned failure")]
     ChildProcessFailure(String),
+    #[error("Custom executable path is required for client \"{0}\"")]
+    MissingExecutable(String),
     #[error("Missing info about the link from {0} to {1}")]
     MissingInfoForDestination(String, String),
     #[error(
