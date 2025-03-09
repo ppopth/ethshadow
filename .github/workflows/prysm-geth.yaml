@@ -1,4 +1,4 @@
-name: Ethshadow
+name: Prysm and Geth
 
 on:
   push:
@@ -51,6 +51,10 @@ jobs:
         make install-lcli
         lighthouse -V
         cd ..
+    - name: Install Prysm
+      run: |
+        curl -L https://github.com/prysmaticlabs/prysm/releases/download/v5.3.0/beacon-chain-v5.3.0-linux-amd64 -o prysm
+        chmod +x prysm
     - name: Install Geth
       run: |
         git clone https://github.com/ethereum/go-ethereum.git
@@ -66,12 +70,18 @@ jobs:
         cargo install --path .
     - name: Run Ethshadow
       run: |
-        ethshadow ci/config.yaml
+        ethshadow ci/prysm-geth.yaml
     - name: Check Ethshadow
       run: |
-        block_received_lines=$(cat ./data/shadow/hosts/node*/lighthouse.*.stderr | grep "New block received" | wc -l)
+        block_received_lines=$(cat ./data/shadow/hosts/node*/prysm.*.stderr | grep "Synced new block" | wc -l)
         echo "block_received_lines=$block_received_lines"
         test $block_received_lines -gt 200
-        block_published_lines=$(cat ./data/shadow/hosts/node*/lighthouse.*.stderr | grep "Signed block published" | wc -l)
+        block_published_lines=$(cat ./data/shadow/hosts/node*/prysm.*.stderr | grep "Finished building block" | wc -l)
         echo "block_published_lines=$block_published_lines"
         test $block_published_lines -eq 24
+        attestation_published_lines=$(cat ./data/shadow/hosts/node*/lighthouse.*.stderr | grep "Successfully published attestations" | wc -l)
+        echo "attestation_published_lines=$attestation_published_lines"
+        test $attestation_published_lines -gt 22
+        chain_segment_imported_lines=$(cat ./data/shadow/hosts/node*/geth.*.stderr | grep "Imported new potential chain segment" | wc -l)
+        echo "chain_segment_imported_lines=$chain_segment_imported_lines"
+        test $chain_segment_imported_lines -gt 200

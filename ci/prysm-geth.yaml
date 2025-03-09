@@ -1,0 +1,28 @@
+general:
+  # How much time should we simulate?
+  stop_time: 10 min
+  # Display a progress indicator?
+  progress: true
+
+ethereum:
+  # Distribute this many validators evenly across all nodes
+  validators: 30
+  nodes:
+    - location: europe
+      reliability: reliable
+      tag: boot
+      clients:
+        el: geth_bootnode
+        cl: lighthouse_bootnode
+    - location: europe
+      reliability: reliable
+      clients:
+        el: geth
+        cl: prysm
+        vc: lighthouse_vc
+      count:
+        per_combination: 10
+  clients:
+    prysm:
+      type: prysm
+      executable: ./prysm
