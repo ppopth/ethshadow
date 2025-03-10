@@ -3,7 +3,7 @@ use crate::clients::CommonParams;
 use crate::clients::{BEACON_API_PORT, CL_PROMETHEUS_PORT, ENGINE_API_PORT};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
-use crate::validators::Validator;
+use crate::validators::ValidatorSet;
 use crate::Error;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -33,7 +33,7 @@ impl Client for Lighthouse {
         &self,
         node: &NodeInfo<'a>,
         ctx: &mut SimulationContext<'a>,
-        _validators: &[Validator],
+        _vs: &ValidatorSet,
     ) -> Result<Process, Error> {
         let dir = node.dir().join("lighthouse");
         let dir = dir.to_str().ok_or(Error::NonUTF8Path)?;

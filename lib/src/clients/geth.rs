@@ -4,7 +4,7 @@ use crate::clients::{Client, JSON_RPC_PORT};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::utils::log_and_wait;
-use crate::validators::Validator;
+use crate::validators::ValidatorSet;
 use crate::Error;
 use log::debug;
 use serde::Deserialize;
@@ -26,7 +26,7 @@ impl Client for Geth {
         &self,
         node: &NodeInfo,
         ctx: &mut SimulationContext,
-        _validators: &[Validator],
+        _vs: &ValidatorSet,
     ) -> Result<Process, Error> {
         let genesis_file = ctx.metadata_path().join("genesis.json");
         let genesis_file = genesis_file.to_str().ok_or(Error::NonUTF8Path)?;

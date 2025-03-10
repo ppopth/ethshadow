@@ -2,7 +2,7 @@ use crate::clients::Client;
 use crate::clients::CommonParams;
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
-use crate::validators::Validator;
+use crate::validators::ValidatorSet;
 use crate::Error;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -24,7 +24,7 @@ impl Client for Blobssss {
         &self,
         _node: &NodeInfo,
         ctx: &mut SimulationContext,
-        _validators: &[Validator],
+        _vs: &ValidatorSet,
     ) -> Result<Process, Error> {
         Ok(Process {
             path: self.common.executable_or("blobssss"),

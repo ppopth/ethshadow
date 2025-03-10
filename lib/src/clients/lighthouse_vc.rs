@@ -3,7 +3,7 @@ use crate::clients::BEACON_API_PORT;
 use crate::clients::{Client, ValidatorDemand};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
-use crate::validators::Validator;
+use crate::validators::ValidatorSet;
 use crate::Error;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -24,34 +24,21 @@ impl Client for LighthouseValidatorClient {
         &self,
         node: &NodeInfo,
         ctx: &mut SimulationContext,
-        validators: &[Validator],
+        vs: &ValidatorSet,
     ) -> Result<Process, Error> {
         let dir = node.dir().join("lighthouse");
         let dir_str = dir.to_str().ok_or(Error::NonUTF8Path)?;
         if !dir.exists() {
             create_dir(&dir)?;
         }
-
-        let secrets_dest = dir.join("secrets");
-        if !secrets_dest.exists() {
-            create_dir(&secrets_dest)?;
-        }
-        let validators_dest = dir.join("validators");
-        if !validators_dest.exists() {
-            create_dir(&validators_dest)?;
-        }
-
-        for validator in validators {
-            let key = validator.key();
-            fs::rename(
-                validator.base_path().join("secrets").join(key),
-                secrets_dest.join(key),
-            )?;
-            fs::rename(
-                validator.base_path().join("keys").join(key),
-                validators_dest.join(key),
-            )?;
-        }
+        fs::rename(
+            vs.base_path().join("secrets"),
+            dir.join("secrets"),
+        )?;
+        fs::rename(
+            vs.base_path().join("keys"),
+            dir.join("validators"),
+        )?;
 
         Ok(Process {
             path: self.common.executable_or("lighthouse"),

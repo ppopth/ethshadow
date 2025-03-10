@@ -3,7 +3,7 @@ use crate::clients::CommonParams;
 use crate::clients::{BEACON_API_PORT, ENGINE_API_PORT};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
-use crate::validators::Validator;
+use crate::validators::ValidatorSet;
 use crate::Error;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -33,7 +33,7 @@ impl Client for Prysm {
         &self,
         node: &NodeInfo<'a>,
         ctx: &mut SimulationContext<'a>,
-        _validators: &[Validator],
+        _vs: &ValidatorSet,
     ) -> Result<Process, Error> {
         if self.common.executable.is_empty() {
             return Err(Error::MissingExecutable(String::from("prysm")));

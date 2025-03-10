@@ -105,8 +105,8 @@ impl<'c, 'n> NodeManager<'c, 'n> {
         };
 
         for &client in clients {
-            let validators = self.validator_manager.assign(client);
-            let process = client.add_to_node(&node, &mut self.ctx, validators)?;
+            let vs = self.validator_manager.assign(client)?;
+            let process = client.add_to_node(&node, &mut self.ctx, &vs)?;
             host.processes.push(process);
         }
 

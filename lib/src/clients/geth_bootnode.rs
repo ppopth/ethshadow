@@ -6,7 +6,7 @@ use std::io::Write;
 use libsecp256k1::{PublicKey, SecretKey};
 use serde::Deserialize;
 
-use crate::clients::{Client, Validator};
+use crate::clients::{Client, ValidatorSet};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::Error;
@@ -26,7 +26,7 @@ impl Client for GethBootnode {
         &self,
         node: &NodeInfo,
         ctx: &mut SimulationContext,
-        _validators: &[Validator],
+        _vs: &ValidatorSet,
     ) -> Result<Process, Error> {
         let dir = node.dir().join("geth_bootnode");
         create_dir(&dir)?;

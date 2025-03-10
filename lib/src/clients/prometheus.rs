@@ -2,7 +2,7 @@ use crate::clients::Client;
 use crate::clients::CommonParams;
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
-use crate::validators::Validator;
+use crate::validators::ValidatorSet;
 use crate::Error;
 use serde::{Deserialize, Serialize};
 use serde_yaml::to_writer;
@@ -40,7 +40,7 @@ impl Client for Prometheus {
         &self,
         node: &NodeInfo,
         ctx: &mut SimulationContext,
-        _validators: &[Validator],
+        _vs: &ValidatorSet,
     ) -> Result<Process, Error> {
         let dir = node.dir().join("prometheus");
         let config_file = node.dir().join("prometheus.yaml");

@@ -3,20 +3,20 @@ use crate::config::ethshadow::{Node, DEFAULT_GENESIS_GEN_IMAGE, DEFAULT_MNEMONIC
 use crate::config::EthShadowConfig;
 use crate::utils::log_and_wait;
 use crate::Error;
-use itertools::Itertools;
 use log::info;
-use std::cmp::min;
-use std::ffi::OsString;
-use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use users::get_current_uid;
 
 pub struct ValidatorManager {
-    validators: Vec<Validator>,
+    image_name: String,
+    mnemonic: String,
+    output_path: PathBuf,
+    validator_count: usize,
     val_for_each_any: usize,
     remainder: usize,
     already_assigned: usize,
+    idx: usize,
 }
 impl ValidatorManager {
     pub fn new(
@@ -59,31 +59,32 @@ impl ValidatorManager {
             validator_count = requested;
         };
 
-        info!("Generating {validator_count} validators");
-        let validators = generate(
-            config
-                .genesis
-                .generator_image
-                .as_deref()
-                .unwrap_or(DEFAULT_GENESIS_GEN_IMAGE),
-            output_path,
-            config
-                .genesis
-                .mnemonic
-                .as_deref()
-                .unwrap_or(DEFAULT_MNEMONIC),
-            validator_count,
-        )?;
+        let image_name = config
+            .genesis
+            .generator_image
+            .as_deref()
+            .unwrap_or(DEFAULT_GENESIS_GEN_IMAGE)
+            .into();
+        let mnemonic = config
+            .genesis
+            .mnemonic
+            .as_deref()
+            .unwrap_or(DEFAULT_MNEMONIC)
+            .into();
 
         Ok(ValidatorManager {
-            validators,
+            image_name,
+            mnemonic,
+            output_path: output_path.to_path_buf(),
+            validator_count,
             val_for_each_any,
             remainder,
             already_assigned: 0,
+            idx: 0,
         })
     }
 
-    pub fn assign(&mut self, client: &dyn Client) -> &[Validator] {
+    pub fn assign(&mut self, client: &dyn Client) -> Result<ValidatorSet, Error> {
         let count = match client.validator_demand() {
             ValidatorDemand::None => 0,
             ValidatorDemand::Any => {
@@ -96,36 +97,19 @@ impl ValidatorManager {
             }
             ValidatorDemand::Count(count) => count,
         };
+        if count == 0 {
+            return Ok(ValidatorSet::default());
+        }
         let start = self.already_assigned;
         let end = start + count;
-        self.already_assigned = end;
-        &self.validators[start..end]
-    }
 
-    pub fn total_count(&self) -> usize {
-        self.validators.len()
-    }
-}
-
-fn generate(
-    image_name: &str,
-    output_path: &Path,
-    mnemonic: &str,
-    total_val: usize,
-) -> Result<Vec<Validator>, Error> {
-    const BATCH_SIZE: usize = 4000;
-    let mut validators = Vec::with_capacity(total_val);
-    let mut idx = 0;
-    let mut data_mount = output_path.as_os_str().to_owned();
-    data_mount.push(":/data");
-    while validators.len() < total_val {
-        if total_val > BATCH_SIZE {
-            info!(
-                "Generating validator batch {} of {}",
-                idx + 1,
-                total_val.div_ceil(BATCH_SIZE)
-            );
-        }
+        let mut data_mount = self.output_path.as_os_str().to_owned();
+        data_mount.push(":/data");
+        info!(
+            "Generating validator of index from {} to {}",
+            start,
+            end - 1
+        );
         let status = log_and_wait(
             Command::new("docker")
                 .args(["run", "--rm", "-i", "-u"])
@@ -133,44 +117,50 @@ fn generate(
                 .arg("-v")
                 .arg(&data_mount)
                 .arg("--entrypoint=eth2-val-tools")
-                .arg(image_name)
+                .arg(&self.image_name)
                 .arg("keystores")
                 .arg("--insecure")
                 .arg("--out-loc")
-                .arg(format!("/data/validator_keys_{idx}"))
+                .arg(format!("/data/validator_keys_{}", self.idx))
                 .arg("--source-mnemonic")
-                .arg(mnemonic)
+                .arg(&self.mnemonic)
                 .arg("--source-min")
-                .arg(validators.len().to_string())
+                .arg(start.to_string())
                 .arg("--source-max")
-                .arg(min(validators.len() + BATCH_SIZE, total_val).to_string()),
+                .arg(end.to_string()),
         )?;
         if !status.success() {
-            return Err(Error::ChildProcessFailure(image_name.to_string()));
+            return Err(Error::ChildProcessFailure(self.image_name.to_string()));
         }
-        let base_path = output_path.join(format!("validator_keys_{idx}"));
-        for validator in read_dir(base_path.join("keys"))?.map_ok(|e| Validator {
-            base_path: base_path.clone(),
-            key: e.file_name(),
-        }) {
-            validators.push(validator?);
-        }
-        idx += 1;
+        self.already_assigned = end;
+        let base_path = self
+            .output_path
+            .join(format!("validator_keys_{}", self.idx));
+
+        self.idx += 1;
+        Ok(ValidatorSet {
+            base_path,
+            count: end - start,
+        })
     }
-    Ok(validators)
+
+    pub fn total_count(&self) -> usize {
+        self.validator_count
+    }
 }
 
-pub struct Validator {
+#[derive(Default)]
+pub struct ValidatorSet {
     base_path: PathBuf,
-    key: OsString,
+    count: usize,
 }
 
-impl Validator {
+impl ValidatorSet {
     pub fn base_path(&self) -> &PathBuf {
         &self.base_path
     }
 
-    pub fn key(&self) -> &OsString {
-        &self.key
+    pub fn count(&self) -> usize {
+        self.count
     }
 }

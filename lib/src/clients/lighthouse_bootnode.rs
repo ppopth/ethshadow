@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::process::Command;
 
-use crate::clients::{Client, Validator};
+use crate::clients::{Client, ValidatorSet};
 use crate::config::shadow::Process;
 use crate::node::{NodeInfo, SimulationContext};
 use crate::utils::log_and_wait;
@@ -37,7 +37,7 @@ impl Client for LighthouseBootnode {
         &self,
         node: &NodeInfo,
         ctx: &mut SimulationContext,
-        _validators: &[Validator],
+        _vs: &ValidatorSet,
     ) -> Result<Process, Error> {
         let dir = node.dir().join("lighthouse_bootnode");
         debug!("Calling lcli generate-bootnode-enr");
