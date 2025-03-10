@@ -1,0 +1,83 @@
+name: Lighthouse and Geth
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Shadow's dependencies
+      run : |
+        # required dependencies
+        sudo apt-get install -y \
+            cmake \
+            findutils \
+            libclang-dev \
+            libc-dbg \
+            libglib2.0-0 \
+            libglib2.0-dev \
+            make \
+            netbase \
+            python3 \
+            python3-networkx \
+            xz-utils \
+            util-linux \
+            gcc \
+            g++
+    - name: Install Shadow
+      run: |
+        git clone https://github.com/shadow/shadow.git
+        cd shadow
+        ./setup build --clean
+        ./setup install
+        cd ..
+    - name: Install Lighthouse's dependencies
+      run : |
+        sudo apt update
+        sudo apt install -y git gcc g++ make cmake pkg-config llvm-dev libclang-dev clang
+    - name: Install Lighthouse
+      run: |
+        git clone https://github.com/sigp/lighthouse.git
+        cd lighthouse
+        git checkout v5.3.0
+        make
+        make install-lcli
+        lighthouse -V
+        cd ..
+    - name: Install Geth
+      run: |
+        git clone https://github.com/ethereum/go-ethereum.git
+        cd go-ethereum
+        git checkout v1.14.11
+        make all
+        sudo cp build/bin/geth /usr/local/bin/geth
+        sudo cp build/bin/bootnode /usr/local/bin/bootnode
+        geth -v
+        cd ..
+    - name: Install Ethshadow
+      run: |
+        cargo install --path .
+    - name: Run Ethshadow
+      run: |
+        ethshadow ci/lighthouse-geth.yaml
+    - name: Check Ethshadow
+      run: |
+        block_received_lines=$(cat ./data/shadow/hosts/node*/lighthouse.*.stderr | grep "New block received" | wc -l)
+        echo "block_received_lines=$block_received_lines"
+        test $block_received_lines -gt 200
+        block_published_lines=$(cat ./data/shadow/hosts/node*/lighthouse.*.stderr | grep "Signed block published" | wc -l)
+        echo "block_published_lines=$block_published_lines"
+        test $block_published_lines -eq 24
+        attestation_published_lines=$(cat ./data/shadow/hosts/node*/lighthouse.*.stderr | grep "Successfully published attestations" | wc -l)
+        echo "attestation_published_lines=$attestation_published_lines"
+        test $attestation_published_lines -gt 22
+        chain_segment_imported_lines=$(cat ./data/shadow/hosts/node*/geth.*.stderr | grep "Imported new potential chain segment" | wc -l)
+        echo "chain_segment_imported_lines=$chain_segment_imported_lines"
+        test $chain_segment_imported_lines -gt 200
