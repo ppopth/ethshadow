@@ -23,6 +23,7 @@ The Docker daemon must be running while Ethshadow prepares the simulation.
 sudo apt-get install -y cmake findutils libclang-dev libc-dbg libglib2.0-0 libglib2.0-dev make netbase python3 python3-networkx xz-utils util-linux gcc g++
 git clone https://github.com/shadow/shadow.git
 cd shadow
+git checkout v3.2.0 # Install the latest version of Shadow
 ./setup build --clean
 ./setup install
 echo 'export PATH="${PATH}:/home/${USER}/.local/bin"' >> ~/.bashrc && source ~/.bashrc

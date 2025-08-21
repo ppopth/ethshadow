@@ -39,6 +39,7 @@ jobs:
       run: |
         git clone https://github.com/shadow/shadow.git
         cd shadow
+        git checkout v3.2.0
         ./setup build --clean
         ./setup install
         cd ..
