@@ -21,6 +21,8 @@ run it using this simulator.
 
 We assume that you already have Go, Rust, and Docker installed.
 
+Please use Go 1.23.x or older because we found that the newer versions don't build Geth v1.14.11
+
 Install Lighthouse and Geth.
 ```sh
 # Lighthouse
